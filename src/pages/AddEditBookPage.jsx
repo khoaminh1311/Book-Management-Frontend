@@ -61,6 +61,23 @@ export default function AddEditBookPage() {
     return () => { isMounted = false; };
   }, [isEdit, preselectedAuthorId]);
 
+  // Reset Form State when switching to Add mode or when id changes
+  useEffect(() => {
+    if (!isEdit) {
+      setFormData({
+        title: '',
+        author: preselectedAuthorId,
+        publishedYear: new Date().getFullYear(),
+        genre: 'Art & Architecture',
+        price: '34.50',
+        description: '',
+        coverImage: '',
+      });
+      setFormErrors({});
+      setInitialLoading(false);
+    }
+  }, [id, isEdit, preselectedAuthorId]);
+
   // Fetch Existing Book Data for Edit Mode
   useEffect(() => {
     if (!isEdit) return;

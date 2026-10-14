@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import MainLayout from './components/layout/MainLayout';
 
@@ -50,29 +50,37 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+function AppRoutes() {
+  const location = useLocation();
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        {/* Books & Catalog */}
+        <Route index element={<DashboardPage />} />
+        <Route path="books/:id" element={<BookDetailPage />} />
+        <Route path="add-book" element={<AddEditBookPage key={location.pathname} />} />
+        <Route path="edit-book/:id" element={<AddEditBookPage key={location.pathname} />} />
+
+        {/* Authors */}
+        <Route path="authors" element={<AuthorsPage />} />
+        <Route path="authors/:id" element={<AuthorDetailPage />} />
+        <Route path="add-author" element={<AddEditAuthorPage key={location.pathname} />} />
+        <Route path="edit-author/:id" element={<AddEditAuthorPage key={location.pathname} />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+}
+
 export default function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
         <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<MainLayout />}>
-              {/* Books & Catalog */}
-              <Route index element={<DashboardPage />} />
-              <Route path="books/:id" element={<BookDetailPage />} />
-              <Route path="add-book" element={<AddEditBookPage />} />
-              <Route path="edit-book/:id" element={<AddEditBookPage />} />
-
-              {/* Authors */}
-              <Route path="authors" element={<AuthorsPage />} />
-              <Route path="authors/:id" element={<AuthorDetailPage />} />
-              <Route path="add-author" element={<AddEditAuthorPage />} />
-              <Route path="edit-author/:id" element={<AddEditAuthorPage />} />
-
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
+          <AppRoutes />
         </ErrorBoundary>
       </BrowserRouter>
     </ToastProvider>
