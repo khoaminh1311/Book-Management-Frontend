@@ -1,0 +1,81 @@
+/**
+ * BookShelf Design Tokens
+ * Extracted directly from Figma via Antigravity MCP
+ * File: Fz98KaZgxQB4s2M1lMhT6M (Frames #1:2, #1:167, #1:523, #1:798, #1:915, #1:1139)
+ */
+
+:root {
+  /* --- PALETTE TOKENS --- */
+  --color-primary: #091426;
+  /* Navy Dark Display & Primary Elements */
+  --color-primary-container: #1B2A4A;
+  /* Elevated Primary */
+  --color-on-primary: #FFFFFF;
+  /* White on Primary */
+
+  --color-secondary: #745939;
+  /* Warm Bronze Antique Accent */
+  --color-secondary-container: #FFDDB8;
+  /* Warm Tint Container */
+  --color-on-secondary-container: #2A1800;
+  /* Deep Bronze on Tint */
+
+  --color-surface: #FAF9F7;
+  /* Warm Canvas Background (fill_16fc6435) */
+  --color-surface-container-lowest: #FFFFFF;
+  /* Pure White Card Canvas */
+  --color-surface-container: #F3F0EB;
+  /* Subtle Border/Badge Background */
+  --color-surface-container-high: #EAE6DF;
+  /* Elevated Border Surface */
+
+  --color-on-surface: #1C1C1A;
+  /* Dark Slate Text */
+  --color-on-surface-variant: #5E6066;
+  /* Editorial Muted Secondary Text */
+  --color-outline-variant: #E2DFD8;
+  /* Light Line/Border Divider */
+
+  --color-error: #BA1A1A;
+  /* Crimson Danger */
+  --color-error-container: #FFDAD6;
+  /* Pale Rose Container */
+  --color-on-error-container: #410002;
+  /* Deep Red on Container */
+
+  /* --- TYPOGRAPHY TOKENS --- */
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* Font Sizes */
+  --text-headline-lg: 2.25rem;
+  /* 36px */
+  --text-headline-md: 1.75rem;
+  /* 28px */
+  --text-headline-sm: 1.25rem;
+  /* 20px */
+  --text-title-md: 1rem;
+  /* 16px */
+  --text-title-sm: 0.875rem;
+  /* 14px */
+  --text-body-md: 0.875rem;
+  /* 14px */
+  --text-body-sm: 0.75rem;
+  /* 12px */
+  --text-label-sm: 0.6875rem;
+  /* 11px */
+
+  /* --- LAYOUT & SPACING TOKENS --- */
+  --header-height: 64px;
+  --sidebar-width: 256px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* --- ELEVATION & SHADOWS --- */
+  --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0px 4px 6px -1px rgba(0, 0, 0, 0.05), 0px 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-modal: 0px 20px 25px -5px rgba(0, 0, 0, 0.1), 0px 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-book: 0px 25px 50px -12px rgba(9, 20, 38, 0.25);
+}
