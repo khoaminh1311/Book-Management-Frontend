@@ -123,11 +123,8 @@ export default function AddEditAuthorPage() {
         name: formData.name.trim(),
         nationality: formData.nationality.trim(),
         bio: formData.bio.trim(),
+        birthYear: formData.birthYear ? Number(formData.birthYear) : null,
       };
-
-      if (formData.birthYear) {
-        payload.birthYear = Number(formData.birthYear);
-      }
 
       if (isEdit) {
         await api.updateAuthor(id, payload);
