@@ -81,12 +81,7 @@ function getPalette(title = '', genre = '', id = '') {
  * @param {string} [props.className=''] - Extra classes for the container
  * @param {string} [props.imgClassName=''] - Extra classes for the img tag
  */
-export default function BookCover({
-  book = {},
-  size = 'md',
-  className = '',
-  imgClassName = '',
-}) {
+export default function BookCover({ book = {}, size = 'md', className = '', imgClassName = '' }) {
   const [imgError, setImgError] = useState(false);
 
   const title = book.title || 'Untitled Volume';
@@ -140,8 +135,8 @@ export default function BookCover({
             isLarge
               ? 'text-[11px] sm:text-xs'
               : isSmall
-              ? 'text-[8px]'
-              : 'text-[9px] sm:text-[10px]'
+                ? 'text-[8px]'
+                : 'text-[9px] sm:text-[10px]'
           } ${palette.accentText}`}
         >
           {isLarge ? `FOLIO · ${genre.toUpperCase()}` : 'FOLIO'}
@@ -155,8 +150,8 @@ export default function BookCover({
             isLarge
               ? 'text-2xl sm:text-[28px] lg:text-[32px] leading-tight line-clamp-4'
               : isSmall
-              ? 'text-[12px] leading-tight line-clamp-2'
-              : 'text-[15px] sm:text-[17px] leading-[1.3] line-clamp-3'
+                ? 'text-[12px] leading-tight line-clamp-2'
+                : 'text-[15px] sm:text-[17px] leading-[1.3] line-clamp-3'
           }`}
           title={title}
         >
@@ -174,11 +169,7 @@ export default function BookCover({
       <div className="relative z-10 flex flex-col gap-0.5 pt-1 pl-1.5 sm:pl-2">
         <p
           className={`font-sans font-semibold tracking-wide text-white truncate ${
-            isLarge
-              ? 'text-sm sm:text-base'
-              : isSmall
-              ? 'text-[10px]'
-              : 'text-[11px] sm:text-xs'
+            isLarge ? 'text-sm sm:text-base' : isSmall ? 'text-[10px]' : 'text-[11px] sm:text-xs'
           }`}
           title={authorName}
         >
@@ -189,8 +180,8 @@ export default function BookCover({
             isLarge
               ? 'text-[11px] sm:text-xs'
               : isSmall
-              ? 'text-[8px]'
-              : 'text-[9px] sm:text-[10px]'
+                ? 'text-[8px]'
+                : 'text-[9px] sm:text-[10px]'
           }`}
         >
           {year !== '—' ? `EST. ${year} · ` : ''}VOL. {archivalCode}

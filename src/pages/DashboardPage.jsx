@@ -25,41 +25,44 @@ export default function DashboardPage() {
   const limit = 8;
   const [pagination, setPagination] = useState({ page: 1, limit: 8, total: 0, totalPages: 1 });
 
-  const fetchCatalogData = useCallback(async (targetPage = 1, searchQuery = '', genreFilter = '', sortOption = 'recent') => {
-    setLoading(true);
-    setError(null);
+  const fetchCatalogData = useCallback(
+    async (targetPage = 1, searchQuery = '', genreFilter = '', sortOption = 'recent') => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const [bookRes, authorRes] = await Promise.all([
-        api.getBooks({
-          page: targetPage,
-          limit,
-          genre: genreFilter === 'All Genres' ? '' : genreFilter,
-          search: searchQuery,
-          sort: sortOption,
-        }),
-        api.getAuthors({ page: 1, limit: 1 }).catch(() => null),
-      ]);
+      try {
+        const [bookRes, authorRes] = await Promise.all([
+          api.getBooks({
+            page: targetPage,
+            limit,
+            genre: genreFilter === 'All Genres' ? '' : genreFilter,
+            search: searchQuery,
+            sort: sortOption,
+          }),
+          api.getAuthors({ page: 1, limit: 1 }).catch(() => null),
+        ]);
 
-      const fetchedBooks = bookRes?.data || [];
-      setBooks(fetchedBooks);
-      if (bookRes?.pagination) {
-        setPagination(bookRes.pagination);
+        const fetchedBooks = bookRes?.data || [];
+        setBooks(fetchedBooks);
+        if (bookRes?.pagination) {
+          setPagination(bookRes.pagination);
+        }
+        if (bookRes?.totalCatalogValue !== undefined) {
+          setTotalCatalogValue(bookRes.totalCatalogValue);
+        }
+        if (authorRes?.pagination?.total !== undefined) {
+          setTotalAuthors(authorRes.pagination.total);
+        }
+      } catch (err) {
+        console.error('Error fetching catalog data:', err);
+        setError(err.message || 'Failed to connect to backend server');
+        showToast(err.message || 'Failed to load books from server', 'error');
+      } finally {
+        setLoading(false);
       }
-      if (bookRes?.totalCatalogValue !== undefined) {
-        setTotalCatalogValue(bookRes.totalCatalogValue);
-      }
-      if (authorRes?.pagination?.total !== undefined) {
-        setTotalAuthors(authorRes.pagination.total);
-      }
-    } catch (err) {
-      console.error('Error fetching catalog data:', err);
-      setError(err.message || 'Failed to connect to backend server');
-      showToast(err.message || 'Failed to load books from server', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [limit, showToast]);
+    },
+    [limit, showToast]
+  );
 
   // Debounced Search, Filter & Sort effect
   useEffect(() => {
@@ -104,9 +107,10 @@ export default function DashboardPage() {
     }
   };
 
-  const catalogValue = totalCatalogValue !== undefined
-    ? totalCatalogValue
-    : books.reduce((sum, b) => sum + (Number(b.price) || 0), 0);
+  const catalogValue =
+    totalCatalogValue !== undefined
+      ? totalCatalogValue
+      : books.reduce((sum, b) => sum + (Number(b.price) || 0), 0);
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-7xl w-full mx-auto flex flex-col gap-6 sm:gap-8">
@@ -114,13 +118,7 @@ export default function DashboardPage() {
       <section className="flex flex-col gap-5 sm:gap-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
           <div>
-            <Breadcrumb
-              items={[
-                { label: 'Dashboard' },
-                { label: 'Books' },
-              ]}
-              className="mb-1.5"
-            />
+            <Breadcrumb items={[{ label: 'Dashboard' }, { label: 'Books' }]} className="mb-1.5" />
             <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-primary tracking-tight font-normal">
               Library Catalog
             </h1>
@@ -161,7 +159,9 @@ export default function DashboardPage() {
             <div className="w-12 h-12 rounded-full bg-error-container/60 text-error flex items-center justify-center">
               <span className="material-symbols-outlined text-[24px]">cloud_off</span>
             </div>
-            <h3 className="font-serif text-lg sm:text-xl text-primary font-medium">Unable to Connect to Server</h3>
+            <h3 className="font-serif text-lg sm:text-xl text-primary font-medium">
+              Unable to Connect to Server
+            </h3>
             <p className="text-xs sm:text-sm text-on-surface-variant max-w-md">
               Please verify the backend server is running and accessible on port 5000.
             </p>
@@ -175,8 +175,12 @@ export default function DashboardPage() {
           </div>
         ) : books.length === 0 ? (
           <div className="py-16 sm:py-20 text-center flex flex-col items-center justify-center gap-3 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 sm:p-8">
-            <span className="material-symbols-outlined text-[48px] text-outline-variant">auto_stories</span>
-            <h3 className="font-serif text-lg sm:text-xl text-primary font-medium">No volumes found</h3>
+            <span className="material-symbols-outlined text-[48px] text-outline-variant">
+              auto_stories
+            </span>
+            <h3 className="font-serif text-lg sm:text-xl text-primary font-medium">
+              No volumes found
+            </h3>
             <p className="text-xs sm:text-sm text-on-surface-variant max-w-sm">
               {search || genre !== 'All Genres'
                 ? 'Try adjusting your search query or filter.'

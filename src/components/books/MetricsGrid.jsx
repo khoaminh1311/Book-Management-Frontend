@@ -9,7 +9,13 @@ import { GENRE_OPTIONS } from '../../utils/constants';
  * - Icon: Bronze #745939 (fill_afdf7c66), 18px
  * - Spacing: pt-3 (12px) margin between label and value (EL-8e175aae)
  */
-export default function MetricsGrid({ totalTitles, totalAuthors, totalGenres, totalValue, valueLabel = 'TOTAL CATALOG VALUE' }) {
+export default function MetricsGrid({
+  totalTitles,
+  totalAuthors,
+  totalGenres,
+  totalValue,
+  valueLabel = 'TOTAL CATALOG VALUE',
+}) {
   const metrics = [
     {
       label: 'TOTAL TITLES',

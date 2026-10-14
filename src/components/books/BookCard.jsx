@@ -22,9 +22,13 @@ export default function BookCard({ book, onDelete, variant = 'default' }) {
   const isAuthorCatalog = variant === 'author';
 
   return (
-    <div className={`group relative bg-surface-container-lowest ${isAuthorCatalog ? 'rounded-xl' : 'rounded-xl sm:rounded-2xl'} p-3 sm:p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between border border-outline-variant/40`}>
+    <div
+      className={`group relative bg-surface-container-lowest ${isAuthorCatalog ? 'rounded-xl' : 'rounded-xl sm:rounded-2xl'} p-3 sm:p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between border border-outline-variant/40`}
+    >
       {/* Book Cover Artwork (2:3 Ratio) - Figma #1:60 / EL-af3a1dd2 */}
-      <div className={`relative w-full aspect-[2/3] ${isAuthorCatalog ? 'rounded-lg' : 'rounded-lg sm:rounded-xl'} overflow-hidden bg-surface-container mb-2.5 sm:mb-3.5`}>
+      <div
+        className={`relative w-full aspect-[2/3] ${isAuthorCatalog ? 'rounded-lg' : 'rounded-lg sm:rounded-xl'} overflow-hidden bg-surface-container mb-2.5 sm:mb-3.5`}
+      >
         <div className="w-full h-full overflow-hidden select-none">
           <BookCover
             book={book}
@@ -95,7 +99,10 @@ export default function BookCard({ book, onDelete, variant = 'default' }) {
             <div className="flex items-center justify-between text-[#45474C] text-[10px] sm:text-[11px] font-semibold tracking-[0.05em] mb-1 font-sans">
               <span className="truncate pr-1.5">
                 {authorId ? (
-                  <Link to={`/authors/${authorId}`} className="hover:text-primary hover:underline transition-colors">
+                  <Link
+                    to={`/authors/${authorId}`}
+                    className="hover:text-primary hover:underline transition-colors"
+                  >
                     {authorName}
                   </Link>
                 ) : (
@@ -108,7 +115,11 @@ export default function BookCard({ book, onDelete, variant = 'default' }) {
 
           {/* Monumental Title: Newsreader Medium 500 (Figma #1:71 / #1:623) */}
           <h2 className="font-serif font-medium text-[16px] sm:text-[20px] leading-[22px] sm:leading-[28px] text-primary line-clamp-1">
-            <Link to={`/books/${book._id}`} className="hover:text-secondary transition-colors" title={book.title}>
+            <Link
+              to={`/books/${book._id}`}
+              className="hover:text-secondary transition-colors"
+              title={book.title}
+            >
               {book.title}
             </Link>
           </h2>
@@ -150,7 +161,9 @@ export default function BookCard({ book, onDelete, variant = 'default' }) {
               title="View volume details"
               aria-label="View volume details"
             >
-              <span className="material-symbols-outlined text-[18px] sm:text-[20px] block leading-none">arrow_forward</span>
+              <span className="material-symbols-outlined text-[18px] sm:text-[20px] block leading-none">
+                arrow_forward
+              </span>
             </Link>
           )}
         </div>

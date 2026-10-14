@@ -6,7 +6,7 @@ Developed with a focus on strict validation, error handling, robust querying cap
 ## Live Deployment Links
 
 🚀 **Production API (Render):** `https://book-management-api-cuds.onrender.com`  
-🌐 **Production Web Client (Vercel):** `https://book-management-frontend-taupe.vercel.app/`  
+🌐 **Production Web Client (Vercel):** `https://book-management-frontend-taupe.vercel.app/`
 
 ## Features
 
@@ -25,6 +25,7 @@ Developed with a focus on strict validation, error handling, robust querying cap
 ## Technology Stack
 
 ### Frontend Client
+
 - **Core**: React 19, Vite 6
 - **Routing**: React Router 7
 - **Styling**: TailwindCSS v3 (Custom Editorial Color Palette & Typography Tokens)
@@ -32,6 +33,7 @@ Developed with a focus on strict validation, error handling, robust querying cap
 - **Icons**: Google Material Symbols
 
 ### Connected Backend
+
 - **Runtime**: Node.js (Express.js) & MongoDB Atlas
 - **Cloud Storage**: Cloudinary CDN
 
@@ -43,18 +45,21 @@ Developed with a focus on strict validation, error handling, robust querying cap
 ## Installation & Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/khoaminh1311/Book-Management-Frontend.git
    cd Book-Management-Frontend
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Configure Environment Variables**
    Create a `.env` file in the root directory (refer to `.env.example`):
+
    ```env
    # Connect to live Production Backend on Render:
    VITE_API_URL=https://book-management-api-cuds.onrender.com
@@ -64,9 +69,11 @@ Developed with a focus on strict validation, error handling, robust querying cap
    ```
 
 4. **Start Development Server**
+
    ```bash
    npm run dev
    ```
+
    Open `http://localhost:5173` in your browser.
 
 5. **Build for Production**

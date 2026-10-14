@@ -65,7 +65,8 @@ export default function RichTextEditor({
     const handleSelectionChange = () => {
       if (
         editorRef.current &&
-        (document.activeElement === editorRef.current || editorRef.current.contains(document.activeElement))
+        (document.activeElement === editorRef.current ||
+          editorRef.current.contains(document.activeElement))
       ) {
         updateActiveFormats();
       }
@@ -304,7 +305,9 @@ export default function RichTextEditor({
         <div
           className="w-full min-h-[160px] p-4 rounded-lg bg-[#F4F3F1] border-0 text-sm text-[#1A1C1B] font-sans leading-[22.75px] overflow-y-auto prose prose-stone max-w-none [&_blockquote]:border-l-2 [&_blockquote]:border-[#745939] [&_blockquote]:pl-3 [&_blockquote]:my-2 [&_blockquote]:italic [&_blockquote]:text-[#45474C] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1.5 [&_a]:text-[#745939] [&_a]:underline [&_strike]:line-through [&_s]:line-through [&_b]:font-bold [&_strong]:font-bold [&_i]:italic [&_em]:italic mt-2"
           dangerouslySetInnerHTML={{
-            __html: sanitizeHtml(value) || '<p class="text-[#75777D] italic">No description entered yet.</p>',
+            __html:
+              sanitizeHtml(value) ||
+              '<p class="text-[#75777D] italic">No description entered yet.</p>',
           }}
         />
       ) : (
@@ -329,7 +332,10 @@ export default function RichTextEditor({
       <div className="flex items-center justify-between text-xs font-sans text-[#45474C] pt-3">
         {/* Left: Icon + "Rich text formatting enabled" */}
         <div className="flex items-center gap-1.5 text-[#45474C]">
-          <svg className="w-[14px] h-[11px] text-[#45474C] fill-current shrink-0" viewBox="0 0 14 11">
+          <svg
+            className="w-[14px] h-[11px] text-[#45474C] fill-current shrink-0"
+            viewBox="0 0 14 11"
+          >
             <path d="M9.62504 7.56253L11.6875 5.50002L10.9657 4.76096L10.1407 5.58596V3.43751H9.10941V5.58596L8.28441 4.76096L7.56253 5.50002L9.62504 7.56253ZM1.37501 11C0.996879 11 0.67318 10.8654 0.403908 10.5961C0.134636 10.3269 0 10.0032 0 9.62504V1.37501C0 0.996879 0.134636 0.67318 0.403908 0.403908C0.67318 0.134636 0.996879 0 1.37501 0H12.375C12.7532 0 13.0769 0.134636 13.3461 0.403908C13.6154 0.67318 13.7501 0.996879 13.7501 1.37501V9.62504C13.7501 10.0032 13.6154 10.3269 13.3461 10.5961C13.0769 10.8654 12.7532 11 12.375 11H1.37501ZM1.37501 9.62504H12.375V1.37501H1.37501V9.62504ZM1.37501 9.62504V1.37501V9.62504ZM2.40626 7.56253H3.43751V4.46877H4.12502V6.53128H5.15627V4.46877H5.84377V7.56253H6.87503V4.12502C6.87503 3.93022 6.80914 3.76694 6.67737 3.63517C6.5456 3.5034 6.38232 3.43751 6.18752 3.43751H3.09376C2.89897 3.43751 2.73569 3.5034 2.60392 3.63517C2.47214 3.76694 2.40626 3.93022 2.40626 4.12502V7.56253Z" />
           </svg>
           <span className="text-[12px] leading-[18px]">Rich text formatting enabled</span>

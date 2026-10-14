@@ -1,18 +1,18 @@
 import React from 'react';
 
-export default function BookLivePreviewCard({
-  formData = {},
-  selectedAuthor = null,
-}) {
+export default function BookLivePreviewCard({ formData = {}, selectedAuthor = null }) {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] flex flex-col items-center gap-4">
       {/* Header: LIVE VOLUME PREVIEW & Proportion Badge (Figma #1:1054 - #1:1059) */}
       <div className="w-full flex items-center justify-between pb-3.5 sm:pb-4 border-b border-[#E9E8E6]">
         <div className="text-[11px] font-semibold leading-[14px] tracking-[0.05em] text-[#45474C] uppercase font-sans">
-          LIVE VOLUME<br />PREVIEW
+          LIVE VOLUME
+          <br />
+          PREVIEW
         </div>
         <div className="px-2 py-0.5 rounded bg-[#FFDDB8]/40 text-[#745939] text-[11px] font-semibold leading-[14px] tracking-[0.05em] font-sans text-right">
-          Proportion 1 :<br />1.5
+          Proportion 1 :<br />
+          1.5
         </div>
       </div>
 

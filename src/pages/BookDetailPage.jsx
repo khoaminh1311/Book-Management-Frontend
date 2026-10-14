@@ -78,7 +78,9 @@ export default function BookDetailPage() {
     return (
       <div className="p-8 lg:p-12 max-w-7xl w-full mx-auto flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <div className="w-10 h-10 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        <p className="text-sm text-on-surface-variant font-sans">Loading volume archival details...</p>
+        <p className="text-sm text-on-surface-variant font-sans">
+          Loading volume archival details...
+        </p>
       </div>
     );
   }
@@ -105,17 +107,14 @@ export default function BookDetailPage() {
   const { authorName, authorId } = normalizeAuthor(book.author);
   const author = book.author && typeof book.author === 'object' ? book.author : null;
   const priceFormatted = formatPrice(book.price);
-  const archivalNo = book._id ? `ARCHIVAL NO. ${book._id.slice(-4).toUpperCase()}` : 'ARCHIVAL NO. 492';
+  const archivalNo = book._id
+    ? `ARCHIVAL NO. ${book._id.slice(-4).toUpperCase()}`
+    : 'ARCHIVAL NO. 492';
 
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-7xl w-full mx-auto flex flex-col gap-6 sm:gap-8">
       {/* Top Breadcrumbs (Figma #1:801 - #1:807) */}
-      <Breadcrumb
-        items={[
-          { label: 'Books', to: '/' },
-          { label: book.title },
-        ]}
-      />
+      <Breadcrumb items={[{ label: 'Books', to: '/' }, { label: book.title }]} />
 
       {/* Main Editorial Two-Column Split Canvas (Figma #1:808) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-start">
@@ -199,14 +198,20 @@ export default function BookDetailPage() {
                     {authorName}
                   </Link>
                 ) : (
-                  <span className="font-serif font-medium text-lg sm:text-xl text-primary">{authorName}</span>
+                  <span className="font-serif font-medium text-lg sm:text-xl text-primary">
+                    {authorName}
+                  </span>
                 )}
               </div>
 
               {/* Quantitative Appraisal Badge (Figma #1:847 - #1:850) */}
               <div className="bg-[#F4F3F1] px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-baseline gap-2 border border-outline-variant/30 font-sans w-fit">
-                <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-[#45474C] uppercase">VALUE</span>
-                <span className="font-serif font-medium text-[18px] sm:text-[20px] leading-[26px] sm:leading-[28px] text-[#1A1C1B]">{priceFormatted}</span>
+                <span className="text-[10px] sm:text-[11px] font-semibold tracking-wider text-[#45474C] uppercase">
+                  VALUE
+                </span>
+                <span className="font-serif font-medium text-[18px] sm:text-[20px] leading-[26px] sm:leading-[28px] text-[#1A1C1B]">
+                  {priceFormatted}
+                </span>
               </div>
             </div>
           </div>
@@ -214,14 +219,20 @@ export default function BookDetailPage() {
           {/* Curatorial Overview & Thematic Description (Figma #1:851 - #1:866) */}
           <div className="bg-surface-container-lowest p-5 sm:p-6 lg:p-8 rounded-xl border border-outline-variant/40 shadow-sm flex flex-col gap-3 sm:gap-4">
             <div className="flex items-center gap-2 text-primary">
-              <span className="material-symbols-outlined text-[20px] sm:text-[22px] text-[#745939]">menu_book</span>
-              <h2 className="font-serif font-medium text-[18px] sm:text-[20px] leading-[26px] sm:leading-[28px]">Description</h2>
+              <span className="material-symbols-outlined text-[20px] sm:text-[22px] text-[#745939]">
+                menu_book
+              </span>
+              <h2 className="font-serif font-medium text-[18px] sm:text-[20px] leading-[26px] sm:leading-[28px]">
+                Description
+              </h2>
             </div>
 
             <div
               className="text-xs sm:text-sm md:text-[15px] leading-[22px] sm:leading-[26px] text-[#1A1C1B] font-sans prose prose-sm max-w-none break-words [&_blockquote]:border-l-2 [&_blockquote]:border-[#745939] [&_blockquote]:pl-3 [&_blockquote]:my-2 [&_blockquote]:italic [&_blockquote]:text-[#45474C] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-1.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-1.5 [&_a]:text-[#745939] [&_a]:underline [&_strike]:line-through [&_s]:line-through [&_b]:font-bold [&_strong]:font-bold [&_i]:italic [&_em]:italic"
               dangerouslySetInnerHTML={{
-                __html: sanitizeHtml(book.description) || '<span class="italic text-[#75777D]">No detailed curatorial description has been recorded for this volume yet.</span>'
+                __html:
+                  sanitizeHtml(book.description) ||
+                  '<span class="italic text-[#75777D]">No detailed curatorial description has been recorded for this volume yet.</span>',
               }}
             />
           </div>
@@ -230,7 +241,9 @@ export default function BookDetailPage() {
           {author && (
             <div className="bg-surface-container-lowest p-4 sm:p-6 rounded-xl border border-outline-variant/40 shadow-sm flex flex-col sm:flex-row sm:items-start lg:items-center gap-4 sm:gap-5">
               {/* Author Avatar circle (Figma #1:869 - #1:870: 48x48px, fill #E9E8E6, border #C5C6CD) */}
-              <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-serif text-[15px] sm:text-[16px] leading-[24px] tracking-[0.05em] font-medium shrink-0 border border-[#C5C6CD] shadow-sm ${getAvatarColor(authorId)}`}>
+              <div
+                className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-serif text-[15px] sm:text-[16px] leading-[24px] tracking-[0.05em] font-medium shrink-0 border border-[#C5C6CD] shadow-sm ${getAvatarColor(authorId)}`}
+              >
                 {getInitials(author.name)}
               </div>
 
@@ -246,10 +259,7 @@ export default function BookDetailPage() {
                   </Link>
                   {/* Demographics (Figma #1:877) */}
                   <p className="text-xs text-[#45474C] font-sans">
-                    {[
-                      author.nationality,
-                      author.birthYear ? `Born ${author.birthYear}` : null,
-                    ]
+                    {[author.nationality, author.birthYear ? `Born ${author.birthYear}` : null]
                       .filter(Boolean)
                       .join(' • ') || 'Catalog Author'}
                   </p>
@@ -275,7 +285,6 @@ export default function BookDetailPage() {
           )}
         </section>
       </div>
-
     </div>
   );
 }

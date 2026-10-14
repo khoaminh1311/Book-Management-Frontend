@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -38,30 +38,33 @@ export default function AuthorsPage() {
   const limit = 10;
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
-  const fetchAuthors = useCallback(async (targetPage = page, searchQuery = search, sortOption = sortBy) => {
-    setLoading(true);
-    setError(null);
+  const fetchAuthors = useCallback(
+    async (targetPage = 1, searchQuery = '', sortOption = 'recent') => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const res = await api.getAuthors({
-        page: targetPage,
-        limit,
-        search: searchQuery,
-        sort: sortOption,
-      });
-      const fetched = res?.data || [];
-      setAuthors(fetched);
-      if (res?.pagination) {
-        setPagination(res.pagination);
+      try {
+        const res = await api.getAuthors({
+          page: targetPage,
+          limit,
+          search: searchQuery,
+          sort: sortOption,
+        });
+        const fetched = res?.data || [];
+        setAuthors(fetched);
+        if (res?.pagination) {
+          setPagination(res.pagination);
+        }
+      } catch (err) {
+        console.error('Error fetching authors:', err);
+        setError(err.message || 'Failed to connect to backend server');
+        showToast(err.message || 'Failed to load authors', 'error');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error fetching authors:', err);
-      setError(err.message || 'Failed to connect to backend server');
-      showToast(err.message || 'Failed to load authors', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, limit, showToast]);
+    },
+    [limit, showToast]
+  );
 
   // Debounced Search and Sort effect
   useEffect(() => {
@@ -71,7 +74,7 @@ export default function AuthorsPage() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [search, sortBy]);
+  }, [search, sortBy, fetchAuthors]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -115,10 +118,7 @@ export default function AuthorsPage() {
         <div>
           {/* Breadcrumbs (Figma #1:173) */}
           <Breadcrumb
-            items={[
-              { label: 'Dashboard', to: '/' },
-              { label: 'Authors' },
-            ]}
+            items={[{ label: 'Dashboard', to: '/' }, { label: 'Authors' }]}
             className="mb-1.5"
           />
 
@@ -169,7 +169,10 @@ export default function AuthorsPage() {
               <div className="flex items-center gap-1 text-sm font-semibold text-primary select-none">
                 <span>{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || 'Last Updated'}</span>
                 {/* Exact downward triangle caret matching Figma #1:212 (width 6.67, height 3.33, color #091426) */}
-                <svg className="w-[7px] h-[4px] fill-current shrink-0 text-primary" viewBox="0 0 7 4">
+                <svg
+                  className="w-[7px] h-[4px] fill-current shrink-0 text-primary"
+                  viewBox="0 0 7 4"
+                >
                   <path d="M0 0L3.5 3.5L7 0H0Z" />
                 </svg>
               </div>
@@ -210,10 +213,14 @@ export default function AuthorsPage() {
           </div>
         ) : authors.length === 0 ? (
           <div className="py-16 text-center flex flex-col items-center justify-center gap-2 p-6">
-            <span className="material-symbols-outlined text-[40px] text-outline-variant">person_off</span>
+            <span className="material-symbols-outlined text-[40px] text-outline-variant">
+              person_off
+            </span>
             <p className="text-sm font-medium text-primary font-sans">No authors found</p>
             <p className="text-xs text-on-surface-variant font-sans">
-              {search ? 'Try adjusting your search criteria.' : 'Start adding authors to your catalog.'}
+              {search
+                ? 'Try adjusting your search criteria.'
+                : 'Start adding authors to your catalog.'}
             </p>
             <Link
               to="/add-author"
@@ -279,9 +286,7 @@ export default function AuthorsPage() {
                           title="View author profile"
                           aria-label={`View ${author.name}`}
                         >
-                          <span className="material-symbols-outlined text-[18px]">
-                            visibility
-                          </span>
+                          <span className="material-symbols-outlined text-[18px]">visibility</span>
                         </Link>
                         <Link
                           to={`/edit-author/${author._id}`}
@@ -289,9 +294,7 @@ export default function AuthorsPage() {
                           title="Edit author"
                           aria-label={`Edit ${author.name}`}
                         >
-                          <span className="material-symbols-outlined text-[18px]">
-                            edit
-                          </span>
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
                         </Link>
                         <button
                           type="button"
@@ -300,9 +303,7 @@ export default function AuthorsPage() {
                           title="Delete author"
                           aria-label={`Delete ${author.name}`}
                         >
-                          <span className="material-symbols-outlined text-[18px]">
-                            delete
-                          </span>
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </div>
                     </div>
@@ -414,9 +415,7 @@ export default function AuthorsPage() {
                               title="Edit author"
                               aria-label={`Edit ${author.name}`}
                             >
-                              <span className="material-symbols-outlined text-[18px]">
-                                edit
-                              </span>
+                              <span className="material-symbols-outlined text-[18px]">edit</span>
                             </Link>
 
                             {/* Delete author (#1:246) */}
@@ -427,9 +426,7 @@ export default function AuthorsPage() {
                               title="Delete author"
                               aria-label={`Delete ${author.name}`}
                             >
-                              <span className="material-symbols-outlined text-[18px]">
-                                delete
-                              </span>
+                              <span className="material-symbols-outlined text-[18px]">delete</span>
                             </button>
                           </div>
                         </td>
@@ -441,19 +438,18 @@ export default function AuthorsPage() {
             </div>
           </>
         )}
+      </section>
 
-        </section>
-
-        {/* SECTION 4: PAGINATION FOOTER */}
-        {!loading && !error && (
-          <Pagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            total={pagination.total}
-            limit={pagination.limit}
-            onPageChange={handlePageChange}
-          />
-        )}
-      </div>
+      {/* SECTION 4: PAGINATION FOOTER */}
+      {!loading && !error && (
+        <Pagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          limit={pagination.limit}
+          onPageChange={handlePageChange}
+        />
+      )}
+    </div>
   );
 }

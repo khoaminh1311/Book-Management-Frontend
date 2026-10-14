@@ -5,7 +5,7 @@
 /**
  * Extract up to 2 initials from a person or author name.
  * e.g. "Arthur Conan Doyle" -> "AD", "Plato" -> "PL"
- * @param {string} name 
+ * @param {string} name
  * @returns {string}
  */
 export function getInitials(name = '') {
@@ -17,7 +17,7 @@ export function getInitials(name = '') {
 
 /**
  * Format book price as USD currency or 'Free'.
- * @param {number|string|null|undefined} price 
+ * @param {number|string|null|undefined} price
  * @returns {string}
  */
 export function formatPrice(price) {
@@ -42,7 +42,7 @@ export const AVATAR_BG_COLORS = [
 
 /**
  * Deterministically get an avatar background color class by author ID.
- * @param {string} id 
+ * @param {string} id
  * @returns {string}
  */
 export function getAvatarColor(id = '') {
@@ -58,7 +58,7 @@ export function getAvatarColor(id = '') {
 
 /**
  * Normalize author representation across books (object, string ID, or name).
- * @param {Object|string|null|undefined} rawAuthor 
+ * @param {Object|string|null|undefined} rawAuthor
  * @returns {{ authorName: string, authorId: string }}
  */
 export function normalizeAuthor(rawAuthor) {

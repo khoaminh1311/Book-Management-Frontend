@@ -113,7 +113,9 @@ export default function AuthorDetailPage() {
     return (
       <div className="p-8 lg:p-12 max-w-7xl w-full mx-auto flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <div className="w-10 h-10 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        <p className="text-sm text-on-surface-variant font-sans">Loading author archival record...</p>
+        <p className="text-sm text-on-surface-variant font-sans">
+          Loading author archival record...
+        </p>
       </div>
     );
   }
@@ -140,12 +142,7 @@ export default function AuthorDetailPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-7xl w-full mx-auto flex flex-col gap-6 sm:gap-8">
       {/* Top Breadcrumb Nav (Figma #1:5 - #1:11) */}
-      <Breadcrumb
-        items={[
-          { label: 'Authors', to: '/authors' },
-          { label: author.name },
-        ]}
-      />
+      <Breadcrumb items={[{ label: 'Authors', to: '/authors' }, { label: author.name }]} />
 
       {/* Section 2: Author Profile Card (Figma #1:12 - #1:44) */}
       <section className="bg-surface-container-lowest p-4 sm:p-6 lg:p-10 rounded-xl border border-outline-variant/40 shadow-sm flex flex-col gap-5 sm:gap-6">
@@ -154,7 +151,9 @@ export default function AuthorDetailPage() {
           {/* Avatar & Author Name (Figma #1:15 - #1:19) */}
           <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
             {/* Avatar Circle (Figma #1:16 - #1:17) */}
-            <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-serif text-[18px] sm:text-[20px] font-bold shrink-0 shadow-sm ${getAvatarColor(author._id)}`}>
+            <div
+              className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-serif text-[18px] sm:text-[20px] font-bold shrink-0 shadow-sm ${getAvatarColor(author._id)}`}
+            >
               {getInitials(author.name)}
             </div>
 
@@ -191,13 +190,17 @@ export default function AuthorDetailPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {/* Nationality Badge (Figma #1:32 - #1:35) */}
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F4F3F1] text-[#45474C] text-[11px] sm:text-xs font-semibold font-sans">
-            <span className="material-symbols-outlined text-[14px] sm:text-[15px] text-[#75777D]">public</span>
+            <span className="material-symbols-outlined text-[14px] sm:text-[15px] text-[#75777D]">
+              public
+            </span>
             <span>{author.nationality || 'Nationality Not Specified'}</span>
           </div>
 
           {/* Birth Year Badge (Figma #1:36 - #1:39) */}
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F4F3F1] text-[#45474C] text-[11px] sm:text-xs font-semibold font-sans">
-            <span className="material-symbols-outlined text-[14px] sm:text-[15px] text-[#75777D]">calendar_today</span>
+            <span className="material-symbols-outlined text-[14px] sm:text-[15px] text-[#75777D]">
+              calendar_today
+            </span>
             <span>{author.birthYear ? `Born ${author.birthYear}` : 'Birth Year Unknown'}</span>
           </div>
         </div>
@@ -274,7 +277,6 @@ export default function AuthorDetailPage() {
           </div>
         )}
       </section>
-
     </div>
   );
 }
