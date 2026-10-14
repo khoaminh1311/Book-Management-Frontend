@@ -8,6 +8,8 @@ export default function RichTextEditor({
   error = '',
   initialLoading = false,
   wordCount = 0,
+  charCount = 0,
+  maxChars = 5000,
 }) {
   const { showToast } = useToast();
   const editorRef = useRef(null);
@@ -153,8 +155,8 @@ export default function RichTextEditor({
             </p>
           </div>
         </div>
-        <span className="text-[11px] font-semibold tracking-[0.05em] text-[#45474C] font-sans">
-          {wordCount} words
+        <span className="text-[11px] font-semibold tracking-[0.05em] text-[#45474C] font-sans whitespace-nowrap">
+          {wordCount} words · {charCount} / {maxChars} chars
         </span>
       </div>
 
