@@ -36,10 +36,12 @@ class ApiService {
         return null;
       }
 
-      const data = await response.json();
+      const isJson = response.headers.get('content-type')?.includes('application/json');
+      const data = isJson ? await response.json() : await response.text();
 
       if (!response.ok) {
-        const error = new Error(data.message || data.error || `HTTP error! Status: ${response.status}`);
+        const message = (typeof data === 'object' && (data.message || data.error)) || (typeof data === 'string' && data) || `HTTP error ${response.status}`;
+        const error = new Error(message);
         error.status = response.status;
         error.data = data;
         throw error;
