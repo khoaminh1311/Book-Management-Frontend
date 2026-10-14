@@ -60,7 +60,7 @@ Developed with a focus on strict validation, error handling, robust querying cap
    VITE_API_URL=https://book-management-api-cuds.onrender.com
 
    # Or connect to Local Backend (if running backend locally on port 5000):
-   # VITE_API_URL=http://localhost:5000/api
+   # VITE_API_URL=http://localhost:5000
    ```
 
 4. **Start Development Server**
@@ -86,5 +86,5 @@ The frontend is optimized for seamless deployment on **Vercel**:
    - **Build and Output Settings:** Default (`npm run build`, output `dist`).
 4. In **Environment Variables**, add:
    - **Key:** `VITE_API_URL`
-   - **Value:** `https://book-management-api-cuds.onrender.com/api`
+   - **Value:** `https://book-management-api-cuds.onrender.com`
 5. Click **Deploy**. SPA client-side routing is handled automatically via `vercel.json`.
