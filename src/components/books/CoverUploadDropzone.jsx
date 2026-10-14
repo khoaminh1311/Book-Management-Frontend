@@ -73,6 +73,7 @@ export default function CoverUploadDropzone({
             if (e.target.files && e.target.files.length > 0 && onFileUpload) {
               onFileUpload(e.target.files[0]);
             }
+            e.target.value = '';
           }}
         />
 
