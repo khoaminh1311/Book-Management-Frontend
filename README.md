@@ -25,9 +25,9 @@ Developed with a focus on strict validation, error handling, robust querying cap
 ## Technology Stack
 
 ### Frontend Client
-- **Core**: React 19, Vite
+- **Core**: React 19, Vite 6
 - **Routing**: React Router 7
-- **Styling**: TailwindCSS (Custom Editorial Color Palette & Typography Tokens)
+- **Styling**: TailwindCSS v3 (Custom Editorial Color Palette & Typography Tokens)
 - **Security**: DOMPurify (Stored XSS Sanitization)
 - **Icons**: Google Material Symbols
 
@@ -57,7 +57,7 @@ Developed with a focus on strict validation, error handling, robust querying cap
    Create a `.env` file in the root directory (refer to `.env.example`):
    ```env
    # Connect to live Production Backend on Render:
-   VITE_API_URL=https://book-management-api-cuds.onrender.com/api
+   VITE_API_URL=https://book-management-api-cuds.onrender.com
 
    # Or connect to Local Backend (if running backend locally on port 5000):
    # VITE_API_URL=http://localhost:5000/api
