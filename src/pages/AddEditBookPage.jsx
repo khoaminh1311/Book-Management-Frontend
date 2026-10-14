@@ -9,6 +9,8 @@ import CoverUploadDropzone from '../components/books/CoverUploadDropzone';
 import BookLivePreviewCard from '../components/books/BookLivePreviewCard';
 import Breadcrumb from '../components/common/Breadcrumb';
 
+const MAX_DESCRIPTION_CHARS = 5000;
+
 export default function AddEditBookPage() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -121,6 +123,12 @@ export default function AddEditBookPage() {
     return textContent.split(/\s+/).filter(Boolean).length;
   }, [formData.description]);
 
+  // Calculate sanitized HTML character count matching backend payload
+  const charCount = useMemo(() => {
+    if (!formData.description) return 0;
+    return sanitizeHtml(formData.description.trim()).length;
+  }, [formData.description]);
+
   // Selected Author Object for Live Preview
   const selectedAuthor = useMemo(() => {
     return authors.find(a => a._id === formData.author) || null;
@@ -212,9 +220,9 @@ export default function AddEditBookPage() {
     }
 
     if (formData.description) {
-      const textContent = formData.description.replace(/<[^>]*>/g, '').trim();
-      if (textContent.length > 1000) {
-        errors.description = 'Description text cannot exceed 1000 characters';
+      const sanitized = sanitizeHtml(formData.description.trim());
+      if (sanitized.length > MAX_DESCRIPTION_CHARS) {
+        errors.description = `Description content (including formatting tags) cannot exceed ${MAX_DESCRIPTION_CHARS} characters (currently ${sanitized.length}/${MAX_DESCRIPTION_CHARS})`;
       }
     }
 
@@ -478,6 +486,8 @@ export default function AddEditBookPage() {
               error={formErrors.description}
               initialLoading={initialLoading}
               wordCount={wordCount}
+              charCount={charCount}
+              maxChars={MAX_DESCRIPTION_CHARS}
             />
           </div>
 
