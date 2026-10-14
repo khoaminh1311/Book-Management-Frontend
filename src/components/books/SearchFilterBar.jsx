@@ -80,7 +80,7 @@ export default function SearchFilterBar({
             ))}
           </select>
           <span className="material-symbols-outlined pointer-events-none absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-[18px] text-[#75777D]">
-            unfold_more
+            expand_more
           </span>
         </div>
       </div>

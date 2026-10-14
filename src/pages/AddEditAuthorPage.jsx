@@ -22,6 +22,20 @@ export default function AddEditAuthorPage() {
   const [loadingAuthor, setLoadingAuthor] = useState(isEdit);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Reset form state when switching to Add mode
+  useEffect(() => {
+    if (!isEdit) {
+      setFormData({
+        name: '',
+        nationality: '',
+        birthYear: '',
+        bio: '',
+      });
+      setFormErrors({});
+      setLoadingAuthor(false);
+    }
+  }, [id, isEdit]);
+
   // Load author details in Edit mode
   useEffect(() => {
     if (isEdit) {

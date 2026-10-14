@@ -111,7 +111,7 @@ export default function AuthorsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-w-7xl w-full mx-auto flex flex-col gap-6 sm:gap-8">
       {/* SECTION 1: EDITORIAL HEADER (Figma #1:170) */}
-      <section className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
+      <section className="flex flex-col gap-1.5">
         <div>
           {/* Breadcrumbs (Figma #1:173) */}
           <Breadcrumb
@@ -132,15 +132,6 @@ export default function AuthorsPage() {
             Manage authors, biographies, and bibliographic affiliations.
           </p>
         </div>
-
-        {/* Header Quick Actions: + Add Author (Figma #1:185 - #1:186) */}
-        <Link
-          to="/add-author"
-          className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 bg-primary text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-primary-container transition-colors shrink-0 self-start sm:self-auto"
-        >
-          <span className="material-symbols-outlined text-[16px]">add</span>
-          <span>Add Author</span>
-        </Link>
       </section>
 
       {/* SECTION 2: SEARCH & FILTER CARD (Figma #1:191 - #1:197) */}
