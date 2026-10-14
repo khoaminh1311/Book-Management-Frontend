@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -38,8 +38,10 @@ export default function AuthorsPage() {
   const limit = 10;
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
+  const pageAbortControllerRef = useRef(null);
+
   const fetchAuthors = useCallback(
-    async (targetPage = 1, searchQuery = '', sortOption = 'recent') => {
+    async (targetPage = 1, searchQuery = '', sortOption = 'recent', signal) => {
       setLoading(true);
       setError(null);
 
@@ -49,6 +51,7 @@ export default function AuthorsPage() {
           limit,
           search: searchQuery,
           sort: sortOption,
+          signal,
         });
         const fetched = res?.data || [];
         setAuthors(fetched);
@@ -56,31 +59,55 @@ export default function AuthorsPage() {
           setPagination(res.pagination);
         }
       } catch (err) {
+        if (err.name === 'AbortError') {
+          return;
+        }
         console.error('Error fetching authors:', err);
         setError(err.message || 'Failed to connect to backend server');
         showToast(err.message || 'Failed to load authors', 'error');
       } finally {
-        setLoading(false);
+        if (!signal?.aborted) {
+          setLoading(false);
+        }
       }
     },
     [limit, showToast]
   );
 
-  // Debounced Search and Sort effect
+  // Debounced Search and Sort effect with AbortController
   useEffect(() => {
+    const controller = new AbortController();
+
     const timer = setTimeout(() => {
       setPage(1);
-      fetchAuthors(1, search, sortBy);
+      fetchAuthors(1, search, sortBy, controller.signal);
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [search, sortBy, fetchAuthors]);
 
   const handlePageChange = (newPage) => {
+    if (pageAbortControllerRef.current) {
+      pageAbortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    pageAbortControllerRef.current = controller;
+
     setPage(newPage);
-    fetchAuthors(newPage, search, sortBy);
+    fetchAuthors(newPage, search, sortBy, controller.signal);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    return () => {
+      if (pageAbortControllerRef.current) {
+        pageAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleDeleteAuthor = async (author) => {
     if (!author) return;

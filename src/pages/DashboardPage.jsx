@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -25,8 +25,16 @@ export default function DashboardPage() {
   const limit = 8;
   const [pagination, setPagination] = useState({ page: 1, limit: 8, total: 0, totalPages: 1 });
 
+  const pageAbortControllerRef = useRef(null);
+
   const fetchCatalogData = useCallback(
-    async (targetPage = 1, searchQuery = '', genreFilter = '', sortOption = 'recent') => {
+    async (
+      targetPage = 1,
+      searchQuery = '',
+      genreFilter = '',
+      sortOption = 'recent',
+      signal
+    ) => {
       setLoading(true);
       setError(null);
 
@@ -38,8 +46,12 @@ export default function DashboardPage() {
             genre: genreFilter === 'All Genres' ? '' : genreFilter,
             search: searchQuery,
             sort: sortOption,
+            signal,
           }),
-          api.getAuthors({ page: 1, limit: 1 }).catch(() => null),
+          api.getAuthors({ page: 1, limit: 1, signal }).catch((err) => {
+            if (err.name === 'AbortError') throw err;
+            return null;
+          }),
         ]);
 
         const fetchedBooks = bookRes?.data || [];
@@ -54,31 +66,55 @@ export default function DashboardPage() {
           setTotalAuthors(authorRes.pagination.total);
         }
       } catch (err) {
+        if (err.name === 'AbortError') {
+          return;
+        }
         console.error('Error fetching catalog data:', err);
         setError(err.message || 'Failed to connect to backend server');
         showToast(err.message || 'Failed to load books from server', 'error');
       } finally {
-        setLoading(false);
+        if (!signal?.aborted) {
+          setLoading(false);
+        }
       }
     },
     [limit, showToast]
   );
 
-  // Debounced Search, Filter & Sort effect
+  // Debounced Search, Filter & Sort effect with AbortController
   useEffect(() => {
+    const controller = new AbortController();
+
     const timer = setTimeout(() => {
       setPage(1);
-      fetchCatalogData(1, search, genre, sortBy);
+      fetchCatalogData(1, search, genre, sortBy, controller.signal);
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [search, genre, sortBy, fetchCatalogData]);
 
   const handlePageChange = (newPage) => {
+    if (pageAbortControllerRef.current) {
+      pageAbortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    pageAbortControllerRef.current = controller;
+
     setPage(newPage);
-    fetchCatalogData(newPage, search, genre, sortBy);
+    fetchCatalogData(newPage, search, genre, sortBy, controller.signal);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+    return () => {
+      if (pageAbortControllerRef.current) {
+        pageAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const handleDeleteBook = async (book) => {
     const confirmed = await confirmAction({
