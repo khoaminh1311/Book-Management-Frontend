@@ -239,7 +239,7 @@ export default function AddEditBookPage() {
         genre: formData.genre.trim(),
         price: Number(formData.price),
         description: sanitizeHtml(formData.description.trim()),
-        coverImage: formData.coverImage.trim() || undefined,
+        coverImage: formData.coverImage.trim() || '',
       };
 
       if (isEdit) {
