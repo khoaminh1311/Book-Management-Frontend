@@ -6,7 +6,7 @@ Developed with a focus on strict validation, error handling, robust querying cap
 ## Live Deployment Links
 
 🚀 **Production API (Render):** `https://book-management-api-cuds.onrender.com`  
-🌐 **Production Web Client (Vercel):** `https://book-management-api-blond.vercel.app/`  
+🌐 **Production Web Client (Vercel):** `https://book-management-frontend-taupe.vercel.app/`  
 
 ## Features
 
