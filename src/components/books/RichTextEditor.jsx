@@ -74,23 +74,18 @@ export default function RichTextEditor({
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, [updateActiveFormats]);
 
-  // Sync editor content on initial load or edit book fetch
+  // Sync editor content on initial load, toggling back from preview, or external value updates
+  // Never overwrite innerHTML while editor is focused to prevent cursor jumping (Issue #11)
   useEffect(() => {
-    if (!initialLoading && editorRef.current) {
-      if (value && editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value;
-      }
-    }
-  }, [initialLoading]);
-
-  // Sync editor content when toggling back from preview mode
-  useEffect(() => {
-    if (!isPreviewMode && editorRef.current) {
-      if (editorRef.current.innerHTML !== (value || '')) {
+    if (!initialLoading && !isPreviewMode && editorRef.current) {
+      const isFocused =
+        document.activeElement === editorRef.current ||
+        editorRef.current.contains(document.activeElement);
+      if (!isFocused && editorRef.current.innerHTML !== (value || '')) {
         editorRef.current.innerHTML = value || '';
       }
     }
-  }, [isPreviewMode, value]);
+  }, [initialLoading, isPreviewMode, value]);
 
   // Handle rich editor input
   const handleEditorInput = () => {
