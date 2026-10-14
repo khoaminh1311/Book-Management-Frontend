@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { sanitizeHtml, isValidHttpUrl } from '../utils/sanitize';
@@ -49,8 +49,8 @@ export default function AddEditBookPage() {
         if (isMounted) {
           const list = res?.data || [];
           setAuthors(list);
-          if (!isEdit && !formData.author && list.length > 0 && !preselectedAuthorId) {
-            setFormData(prev => ({ ...prev, author: list[0]._id }));
+          if (!isEdit && list.length > 0 && !preselectedAuthorId) {
+            setFormData((prev) => (prev.author ? prev : { ...prev, author: list[0]._id }));
           }
         }
       } catch (err) {
@@ -60,25 +60,10 @@ export default function AddEditBookPage() {
       }
     }
     loadAuthors();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [isEdit, preselectedAuthorId]);
-
-  // Reset Form State when switching to Add mode or when id changes
-  useEffect(() => {
-    if (!isEdit) {
-      setFormData({
-        title: '',
-        author: preselectedAuthorId,
-        publishedYear: new Date().getFullYear(),
-        genre: 'Art & Architecture',
-        price: '34.50',
-        description: '',
-        coverImage: '',
-      });
-      setFormErrors({});
-      setInitialLoading(false);
-    }
-  }, [id, isEdit, preselectedAuthorId]);
 
   // Fetch Existing Book Data for Edit Mode
   useEffect(() => {
@@ -113,7 +98,9 @@ export default function AddEditBookPage() {
     }
 
     loadBookData();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [id, isEdit, navigate, showToast]);
 
   // Calculate word count for Description (stripping HTML tags)
@@ -131,61 +118,64 @@ export default function AddEditBookPage() {
 
   // Selected Author Object for Live Preview
   const selectedAuthor = useMemo(() => {
-    return authors.find(a => a._id === formData.author) || null;
+    return authors.find((a) => a._id === formData.author) || null;
   }, [authors, formData.author]);
 
   // Input Change Handlers
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: '' }));
+      setFormErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   // Description Change Handler
   const handleDescriptionChange = (html) => {
-    setFormData(prev => ({ ...prev, description: html }));
+    setFormData((prev) => ({ ...prev, description: html }));
     if (formErrors.description) {
-      setFormErrors(prev => ({ ...prev, description: '' }));
+      setFormErrors((prev) => ({ ...prev, description: '' }));
     }
   };
 
   // Cloudinary File Upload Handler
-  const handleFileUpload = useCallback(async (file) => {
-    if (!file) return;
+  const handleFileUpload = useCallback(
+    async (file) => {
+      if (!file) return;
 
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      showToast('Only JPEG, PNG, and WEBP image files are allowed', 'error');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('File size exceeds the 5MB limit', 'error');
-      return;
-    }
-
-    try {
-      setUploadingCover(true);
-      showToast('Uploading cover artwork to Cloudinary...', 'info', 2000);
-      const res = await api.uploadCover(file);
-      if (res?.url) {
-        setFormData(prev => ({ ...prev, coverImage: res.url }));
-        if (formErrors.coverImage) {
-          setFormErrors(prev => ({ ...prev, coverImage: '' }));
-        }
-        showToast('Cover artwork uploaded successfully to Cloudinary!', 'success');
-      } else {
-        throw new Error(res?.message || 'Upload did not return an asset URL');
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        showToast('Only JPEG, PNG, and WEBP image files are allowed', 'error');
+        return;
       }
-    } catch (err) {
-      console.error('Upload failed:', err);
-      showToast(err.message || 'Failed to upload cover image', 'error');
-    } finally {
-      setUploadingCover(false);
-    }
-  }, [showToast, formErrors.coverImage]);
+
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File size exceeds the 5MB limit', 'error');
+        return;
+      }
+
+      try {
+        setUploadingCover(true);
+        showToast('Uploading cover artwork to Cloudinary...', 'info', 2000);
+        const res = await api.uploadCover(file);
+        if (res?.url) {
+          setFormData((prev) => ({ ...prev, coverImage: res.url }));
+          if (formErrors.coverImage) {
+            setFormErrors((prev) => ({ ...prev, coverImage: '' }));
+          }
+          showToast('Cover artwork uploaded successfully to Cloudinary!', 'success');
+        } else {
+          throw new Error(res?.message || 'Upload did not return an asset URL');
+        }
+      } catch (err) {
+        console.error('Upload failed:', err);
+        showToast(err.message || 'Failed to upload cover image', 'error');
+      } finally {
+        setUploadingCover(false);
+      }
+    },
+    [showToast, formErrors.coverImage]
+  );
 
   // Form Validation
   const validateForm = () => {
@@ -276,7 +266,9 @@ export default function AddEditBookPage() {
     return (
       <div className="p-8 lg:p-12 max-w-7xl w-full mx-auto flex flex-col items-center justify-center min-h-[60vh] gap-3">
         <div className="w-10 h-10 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        <p className="text-sm text-on-surface-variant font-sans">Loading volume metadata from archival database...</p>
+        <p className="text-sm text-on-surface-variant font-sans">
+          Loading volume metadata from archival database...
+        </p>
       </div>
     );
   }
@@ -286,10 +278,7 @@ export default function AddEditBookPage() {
       {/* Page Title & Header Actions (Figma #1:926 - #1:931) */}
       <div className="flex flex-col">
         <Breadcrumb
-          items={[
-            { label: 'Books', to: '/' },
-            { label: isEdit ? 'Edit Volume' : 'Add New Book' },
-          ]}
+          items={[{ label: 'Books', to: '/' }, { label: isEdit ? 'Edit Volume' : 'Add New Book' }]}
           className="mb-1.5"
         />
         <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-primary font-normal tracking-tight break-words">
@@ -311,7 +300,10 @@ export default function AddEditBookPage() {
               <div className="flex items-center justify-between gap-3 sm:gap-4 pb-3.5 sm:pb-4 border-b border-[#E9E8E6]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[#E9E8E6] flex items-center justify-center shrink-0">
-                    <svg className="w-[19px] h-[14px] text-[#091426] fill-current" viewBox="0 0 19 14">
+                    <svg
+                      className="w-[19px] h-[14px] text-[#091426] fill-current"
+                      viewBox="0 0 19 14"
+                    >
                       <path d="M11.2272 5.09541V3.62724C11.7022 3.42573 12.188 3.27459 12.6845 3.17384C13.1811 3.07308 13.7029 3.0227 14.2499 3.0227C14.6241 3.0227 14.9912 3.05149 15.351 3.10906C15.7108 3.16664 16.0635 3.23861 16.4089 3.32497V4.70678C16.0635 4.57723 15.7144 4.48007 15.3618 4.4153C15.0091 4.35053 14.6385 4.31814 14.2499 4.31814C13.7029 4.31814 13.1775 4.38651 12.6738 4.52326C12.17 4.66 11.6878 4.85071 11.2272 5.09541ZM11.2272 9.84537V8.3772C11.7022 8.17568 12.188 8.02455 12.6845 7.92379C13.1811 7.82304 13.7029 7.77266 14.2499 7.77266C14.6241 7.77266 14.9912 7.80145 15.351 7.85902C15.7108 7.9166 16.0635 7.98857 16.4089 8.07493V9.45673C16.0635 9.32719 15.7144 9.23003 15.3618 9.16526C15.0091 9.10049 14.6385 9.0681 14.2499 9.0681C13.7029 9.0681 13.1775 9.13287 12.6738 9.26242C12.17 9.39196 11.6878 9.58628 11.2272 9.84537ZM11.2272 7.47039V6.00222C11.7022 5.80071 12.188 5.64957 12.6845 5.54881C13.1811 5.44806 13.7029 5.39768 14.2499 5.39768C14.6241 5.39768 14.9912 5.42647 15.351 5.48404C15.7108 5.54162 16.0635 5.61359 16.4089 5.69995V7.08176C16.0635 6.95221 15.7144 6.85505 15.3618 6.79028C15.0091 6.72551 14.6385 6.69312 14.2499 6.69312C13.7029 6.69312 13.1775 6.76149 12.6738 6.89823C12.17 7.03498 11.6878 7.22569 11.2272 7.47039ZM4.74996 10.3635C5.42647 10.3635 6.08498 10.4391 6.72551 10.5902C7.36603 10.7414 8.00296 10.9681 8.63629 11.2704V2.76361C8.04614 2.41816 7.42001 2.15907 6.75789 1.98635C6.09578 1.81362 5.42647 1.72726 4.74996 1.72726C4.23178 1.72726 3.7172 1.77764 3.20622 1.87839C2.69524 1.97915 2.20225 2.13028 1.72726 2.3318V10.8817C2.23104 10.709 2.73123 10.5795 3.22781 10.4931C3.7244 10.4067 4.23178 10.3635 4.74996 10.3635ZM10.3635 11.2704C10.9969 10.9681 11.6338 10.7414 12.2743 10.5902C12.9148 10.4391 13.5734 10.3635 14.2499 10.3635C14.7681 10.3635 15.2754 10.4067 15.772 10.4931C16.2686 10.5795 16.7688 10.709 17.2726 10.8817V2.3318C16.7976 2.13028 16.3046 1.97915 15.7936 1.87839C15.2826 1.77764 14.7681 1.72726 14.2499 1.72726C13.5734 1.72726 12.9041 1.81362 12.2419 1.98635C11.5798 2.15907 10.9537 2.41816 10.3635 2.76361V11.2704ZM9.49992 13.8181C8.80901 13.2711 8.06053 12.8465 7.25448 12.5442C6.44843 12.2419 5.61359 12.0908 4.74996 12.0908C4.14542 12.0908 3.55167 12.17 2.96872 12.3283C2.38577 12.4866 1.82801 12.7097 1.29544 12.9976C0.993173 13.1559 0.701698 13.1487 0.421019 12.976C0.14034 12.8033 0 12.5514 0 12.2203V1.81362C0 1.65529 0.039583 1.50415 0.118749 1.36022C0.197915 1.21628 0.316664 1.10832 0.474996 1.03635C1.13711 0.690903 1.82801 0.431814 2.5477 0.259089C3.2674 0.0863629 4.00148 0 4.74996 0C5.5848 0 6.40165 0.107954 7.2005 0.323861C7.99936 0.539768 8.76583 0.863629 9.49992 1.29544C10.234 0.863629 11.0005 0.539768 11.7993 0.323861C12.5982 0.107954 13.415 0 14.2499 0C14.9984 0 15.7324 0.0863629 16.4521 0.259089C17.1718 0.431814 17.8627 0.690903 18.5248 1.03635C18.6832 1.10832 18.8019 1.21628 18.8811 1.36022C18.9602 1.50415 18.9998 1.65529 18.9998 1.81362V12.2203C18.9998 12.5514 18.8595 12.8033 18.5788 12.976C18.2981 13.1487 18.0067 13.1559 17.7044 12.9976C17.1718 12.7097 16.6141 12.4866 16.0311 12.3283C15.4482 12.17 14.8544 12.0908 14.2499 12.0908C13.3862 12.0908 12.5514 12.2419 11.7453 12.5442C10.9393 12.8465 10.1908 13.2711 9.49992 13.8181Z" />
                     </svg>
                   </div>
@@ -332,7 +324,10 @@ export default function AddEditBookPage() {
               {/* Input: Book Title (Figma #1:950 - #1:957) */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-sm font-sans">
-                  <label htmlFor="book-title" className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B]">
+                  <label
+                    htmlFor="book-title"
+                    className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B]"
+                  >
                     Book Title <span className="text-[#BA1A1A] font-normal">*</span>
                   </label>
                   <span className="font-semibold text-[11px] leading-[14px] tracking-[0.05em] text-[#45474C]">
@@ -361,7 +356,10 @@ export default function AddEditBookPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Author Select */}
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="book-author" className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans">
+                  <label
+                    htmlFor="book-author"
+                    className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans"
+                  >
                     Primary Author <span className="text-[#BA1A1A] font-normal">*</span>
                   </label>
                   <div className="relative">
@@ -385,7 +383,10 @@ export default function AddEditBookPage() {
                         </option>
                       ))}
                     </select>
-                    <svg className="w-[10px] h-[7px] text-[#45474C] fill-current absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 10 7">
+                    <svg
+                      className="w-[10px] h-[7px] text-[#45474C] fill-current absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                      viewBox="0 0 10 7"
+                    >
                       <path d="M5 6.16667L0 1.16667L1.16667 0L5 3.83333L8.83333 0L10 1.16667L5 6.16667Z" />
                     </svg>
                   </div>
@@ -396,7 +397,10 @@ export default function AddEditBookPage() {
 
                 {/* Published Year */}
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="book-year" className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans">
+                  <label
+                    htmlFor="book-year"
+                    className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans"
+                  >
                     Published Year <span className="text-[#BA1A1A] font-normal">*</span>
                   </label>
                   <input
@@ -423,7 +427,10 @@ export default function AddEditBookPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Genre Select */}
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="book-genre" className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans">
+                  <label
+                    htmlFor="book-genre"
+                    className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans"
+                  >
                     Genre <span className="text-[#BA1A1A] font-normal">*</span>
                   </label>
                   <div className="relative">
@@ -440,7 +447,10 @@ export default function AddEditBookPage() {
                         </option>
                       ))}
                     </select>
-                    <svg className="w-[10px] h-[7px] text-[#45474C] fill-current absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 10 7">
+                    <svg
+                      className="w-[10px] h-[7px] text-[#45474C] fill-current absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                      viewBox="0 0 10 7"
+                    >
                       <path d="M5 6.16667L0 1.16667L1.16667 0L5 3.83333L8.83333 0L10 1.16667L5 6.16667Z" />
                     </svg>
                   </div>
@@ -448,7 +458,10 @@ export default function AddEditBookPage() {
 
                 {/* Price (USD) */}
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="book-price" className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans">
+                  <label
+                    htmlFor="book-price"
+                    className="font-semibold text-[14px] leading-[20px] text-[#1A1C1B] font-sans"
+                  >
                     Price <span className="text-[#BA1A1A] font-normal">*</span>
                   </label>
                   <div className="relative flex items-center">
@@ -494,10 +507,7 @@ export default function AddEditBookPage() {
           {/* RIGHT 4 COLUMNS: PHYSICAL SIMULATION & CLOUDINARY UPLOAD (Figma #1:1052) */}
           <div className="lg:col-span-4 flex flex-col gap-6 sm:gap-8">
             {/* Live 3D Physical Book Simulation (Figma #1:1053 - #1:1076) */}
-            <BookLivePreviewCard
-              formData={formData}
-              selectedAuthor={selectedAuthor}
-            />
+            <BookLivePreviewCard formData={formData} selectedAuthor={selectedAuthor} />
 
             {/* Cover Source & Drag-Drop Box (Figma #1:1078 - #1:1089) */}
             <CoverUploadDropzone

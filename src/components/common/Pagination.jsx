@@ -11,7 +11,13 @@ import React from 'react';
  * - Inactive Page Buttons (#1:756, #1:758, etc.): 32x32px, rounded-lg, text-[#45474C], hover:bg-surface-container
  * - Ellipsis (#1:762): px-1 text-[#75777D] 12px
  */
-export default function Pagination({ page = 1, totalPages = 1, total = 0, limit = 8, onPageChange }) {
+export default function Pagination({
+  page = 1,
+  totalPages = 1,
+  total = 0,
+  limit = 8,
+  onPageChange,
+}) {
   const safeTotal = Math.max(0, total);
   const safeTotalPages = Math.max(1, totalPages || 1);
   const safePage = Math.min(Math.max(1, page || 1), safeTotalPages);
@@ -66,7 +72,10 @@ export default function Pagination({ page = 1, totalPages = 1, total = 0, limit 
           {pages.map((p, idx) => {
             if (p === '...') {
               return (
-                <div key={`ellipsis-${idx}`} className="px-1 text-[12px] text-[#75777D] select-none">
+                <div
+                  key={`ellipsis-${idx}`}
+                  className="px-1 text-[12px] text-[#75777D] select-none"
+                >
                   ...
                 </div>
               );

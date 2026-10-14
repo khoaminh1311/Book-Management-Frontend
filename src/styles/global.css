@@ -13,7 +13,10 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, .font-serif {
+  h1,
+  h2,
+  h3,
+  .font-serif {
     font-family: var(--font-serif);
   }
 }

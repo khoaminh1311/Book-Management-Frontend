@@ -12,10 +12,7 @@ export default function MainLayout() {
         isMobileNavOpen={isMobileNavOpen}
         onToggleNav={() => setIsMobileNavOpen((prev) => !prev)}
       />
-      <Sidebar
-        isOpen={isMobileNavOpen}
-        onClose={() => setIsMobileNavOpen(false)}
-      />
+      <Sidebar isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
       <main className="ml-0 lg:ml-64 pt-16 min-h-screen flex flex-col transition-[margin] duration-200">
         <Outlet />
       </main>

@@ -9,9 +9,10 @@ export function ToastProvider({ children }) {
 
   // Cleanup all pending timeouts on unmount
   useEffect(() => {
+    const timeouts = timeoutIdsRef.current;
     return () => {
-      timeoutIdsRef.current.forEach(timerId => clearTimeout(timerId));
-      timeoutIdsRef.current.clear();
+      timeouts.forEach((timerId) => clearTimeout(timerId));
+      timeouts.clear();
     };
   }, []);
 
@@ -20,47 +21,50 @@ export function ToastProvider({ children }) {
       clearTimeout(timeoutIdsRef.current.get(id));
       timeoutIdsRef.current.delete(id);
     }
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const showToast = useCallback((message, type = 'info', duration = 3500) => {
     const id = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type }]);
 
     if (duration > 0) {
       const timerId = setTimeout(() => {
-        setToasts(prev => prev.filter(t => t.id !== id));
+        setToasts((prev) => prev.filter((t) => t.id !== id));
         timeoutIdsRef.current.delete(id);
       }, duration);
       timeoutIdsRef.current.set(id, timerId);
     }
   }, []);
 
-  const confirmAction = useCallback(({
-    title = 'Confirm Action',
-    message = 'Are you sure you want to proceed?',
-    confirmText = 'Confirm',
-    cancelText = 'Cancel',
-    isDangerous = false,
-  }) => {
-    return new Promise((resolve) => {
-      setModalConfig({
-        title,
-        message,
-        confirmText,
-        cancelText,
-        isDangerous,
-        onConfirm: () => {
-          setModalConfig(null);
-          resolve(true);
-        },
-        onCancel: () => {
-          setModalConfig(null);
-          resolve(false);
-        },
+  const confirmAction = useCallback(
+    ({
+      title = 'Confirm Action',
+      message = 'Are you sure you want to proceed?',
+      confirmText = 'Confirm',
+      cancelText = 'Cancel',
+      isDangerous = false,
+    }) => {
+      return new Promise((resolve) => {
+        setModalConfig({
+          title,
+          message,
+          confirmText,
+          cancelText,
+          isDangerous,
+          onConfirm: () => {
+            setModalConfig(null);
+            resolve(true);
+          },
+          onCancel: () => {
+            setModalConfig(null);
+            resolve(false);
+          },
+        });
       });
-    });
-  }, []);
+    },
+    []
+  );
 
   return (
     <ToastContext.Provider value={{ showToast, confirmAction }}>
@@ -68,29 +72,29 @@ export function ToastProvider({ children }) {
 
       {/* Floating Toasts matching Figma Tokens */}
       <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0">
-        {toasts.map(t => {
-          const styles = {
-            success: 'bg-primary text-on-primary border border-primary-container',
-            error: 'bg-error-container text-on-error-container border border-error/20',
-            warning: 'bg-[#FFEDD5] text-[#7C2D12] border border-secondary/20',
-            info: 'bg-surface-container-lowest text-primary border border-outline-variant shadow-lg',
-          }[t.type] || 'bg-surface-container-lowest text-primary';
+        {toasts.map((t) => {
+          const styles =
+            {
+              success: 'bg-primary text-on-primary border border-primary-container',
+              error: 'bg-error-container text-on-error-container border border-error/20',
+              warning: 'bg-[#FFEDD5] text-[#7C2D12] border border-secondary/20',
+              info: 'bg-surface-container-lowest text-primary border border-outline-variant shadow-lg',
+            }[t.type] || 'bg-surface-container-lowest text-primary';
 
-          const icon = {
-            success: 'check_circle',
-            error: 'error',
-            warning: 'warning',
-            info: 'info',
-          }[t.type] || 'info';
+          const icon =
+            {
+              success: 'check_circle',
+              error: 'error',
+              warning: 'warning',
+              info: 'info',
+            }[t.type] || 'info';
 
           return (
             <div
               key={t.id}
               className={`pointer-events-auto flex items-center gap-3 p-3.5 rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 opacity-100 ${styles}`}
             >
-              <span className="material-symbols-outlined text-[20px] shrink-0">
-                {icon}
-              </span>
+              <span className="material-symbols-outlined text-[20px] shrink-0">{icon}</span>
               <span className="text-sm font-medium flex-1">{t.message}</span>
               <button
                 type="button"
@@ -110,9 +114,13 @@ export function ToastProvider({ children }) {
         <div className="fixed inset-0 z-[10000] bg-primary/45 backdrop-blur-[4px] flex items-center justify-center p-4 transition-opacity">
           <div className="bg-surface-container-lowest text-on-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-outline-variant/40 flex flex-col gap-5 transform scale-100 transition-transform">
             <div className="flex items-start gap-3.5">
-              <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${
-                modalConfig.isDangerous ? 'bg-error-container/60 text-error' : 'bg-surface-container text-primary'
-              }`}>
+              <div
+                className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${
+                  modalConfig.isDangerous
+                    ? 'bg-error-container/60 text-error'
+                    : 'bg-surface-container text-primary'
+                }`}
+              >
                 <span className="material-symbols-outlined text-[22px]">
                   {modalConfig.isDangerous ? 'warning' : 'help'}
                 </span>

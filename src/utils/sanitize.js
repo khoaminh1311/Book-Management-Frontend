@@ -63,7 +63,7 @@ export function isValidHttpUrl(urlString) {
   try {
     const parsed = new URL(trimmed);
     return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch (_) {
+  } catch {
     return false;
   }
 }

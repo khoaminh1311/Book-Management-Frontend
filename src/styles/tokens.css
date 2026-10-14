@@ -8,37 +8,37 @@
   /* --- PALETTE TOKENS --- */
   --color-primary: #091426;
   /* Navy Dark Display & Primary Elements */
-  --color-primary-container: #1B2A4A;
+  --color-primary-container: #1b2a4a;
   /* Elevated Primary */
-  --color-on-primary: #FFFFFF;
+  --color-on-primary: #ffffff;
   /* White on Primary */
 
   --color-secondary: #745939;
   /* Warm Bronze Antique Accent */
-  --color-secondary-container: #FFDDB8;
+  --color-secondary-container: #ffddb8;
   /* Warm Tint Container */
-  --color-on-secondary-container: #2A1800;
+  --color-on-secondary-container: #2a1800;
   /* Deep Bronze on Tint */
 
-  --color-surface: #FAF9F7;
+  --color-surface: #faf9f7;
   /* Warm Canvas Background (fill_16fc6435) */
-  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-lowest: #ffffff;
   /* Pure White Card Canvas */
-  --color-surface-container: #F3F0EB;
+  --color-surface-container: #f3f0eb;
   /* Subtle Border/Badge Background */
-  --color-surface-container-high: #EAE6DF;
+  --color-surface-container-high: #eae6df;
   /* Elevated Border Surface */
 
-  --color-on-surface: #1C1C1A;
+  --color-on-surface: #1c1c1a;
   /* Dark Slate Text */
-  --color-on-surface-variant: #5E6066;
+  --color-on-surface-variant: #5e6066;
   /* Editorial Muted Secondary Text */
-  --color-outline-variant: #E2DFD8;
+  --color-outline-variant: #e2dfd8;
   /* Light Line/Border Divider */
 
-  --color-error: #BA1A1A;
+  --color-error: #ba1a1a;
   /* Crimson Danger */
-  --color-error-container: #FFDAD6;
+  --color-error-container: #ffdad6;
   /* Pale Rose Container */
   --color-on-error-container: #410002;
   /* Deep Red on Container */

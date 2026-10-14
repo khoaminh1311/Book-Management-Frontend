@@ -2,8 +2,9 @@
  * BookShelf REST API Client
  * Interacts with Node.js/Express backend on port 5000
  */
-const API_BASE_URL = import.meta.env.VITE_API_URL ||
-  ((typeof window !== 'undefined' && window.location.port === '5000')
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' && window.location.port === '5000'
     ? window.location.origin
     : 'http://localhost:5000');
 
@@ -40,7 +41,10 @@ class ApiService {
       const data = isJson ? await response.json() : await response.text();
 
       if (!response.ok) {
-        const message = (typeof data === 'object' && (data.message || data.error)) || (typeof data === 'string' && data) || `HTTP error ${response.status}`;
+        const message =
+          (typeof data === 'object' && (data.message || data.error)) ||
+          (typeof data === 'string' && data) ||
+          `HTTP error ${response.status}`;
         const error = new Error(message);
         error.status = response.status;
         error.data = data;
@@ -50,7 +54,9 @@ class ApiService {
       return data;
     } catch (err) {
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        const netErr = new Error('Cannot connect to backend server. Please verify Node.js is running on port 5000.');
+        const netErr = new Error(
+          'Cannot connect to backend server. Please verify Node.js is running on port 5000.'
+        );
         netErr.status = 0;
         throw netErr;
       }

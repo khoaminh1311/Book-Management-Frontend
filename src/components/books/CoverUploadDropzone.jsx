@@ -34,7 +34,10 @@ export default function CoverUploadDropzone({
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] flex flex-col gap-3">
-      <label htmlFor="cover-url" className="text-xs sm:text-[14px] font-semibold leading-[20px] text-[#1A1C1B] font-sans">
+      <label
+        htmlFor="cover-url"
+        className="text-xs sm:text-[14px] font-semibold leading-[20px] text-[#1A1C1B] font-sans"
+      >
         Cover Asset URL
       </label>
 
@@ -59,9 +62,7 @@ export default function CoverUploadDropzone({
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         className={`border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
-          isDragging
-            ? 'border-[#091426] bg-[#091426]/5'
-            : 'border-[#C5C6CD] hover:border-[#091426]'
+          isDragging ? 'border-[#091426] bg-[#091426]/5' : 'border-[#C5C6CD] hover:border-[#091426]'
         } ${uploadingCover ? 'opacity-50 pointer-events-none' : ''}`}
       >
         <input

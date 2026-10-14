@@ -55,7 +55,6 @@ export default function Header({ isMobileNavOpen = false, onToggleNav }) {
 
       {/* Right: Quick Action CTA, User Profile Avatar (Figma #1:160, #1:165) */}
       <div className="flex items-center gap-2 sm:gap-3.5">
-
         {/* Quick Action CTA Button (Figma #1:160) */}
         <Link
           to={isAuthorSection ? '/add-author' : '/add-book'}
