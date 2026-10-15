@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import MetricsGrid from '../components/books/MetricsGrid';
@@ -11,21 +11,101 @@ import { GENRE_OPTIONS } from '../utils/constants';
 
 export default function DashboardPage() {
   const { showToast, confirmAction } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // URL Search Params (Single Source of Truth)
+  const urlSearch = searchParams.get('search') || '';
+  const urlGenre = searchParams.get('genre') || 'All Genres';
+  const urlSort = searchParams.get('sort') || 'recent';
+  const rawPage = searchParams.get('page');
+  const isInvalidPage = rawPage !== null && !/^[1-9]\d*$/.test(rawPage.trim());
+  const urlPage = isInvalidPage ? 1 : Math.max(1, parseInt(rawPage || '1', 10));
+
+  // Local state for smooth instant search typing
+  const [searchInput, setSearchInput] = useState(urlSearch);
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
+
+  // Sync local search input when URL search changes externally (e.g. Back/Forward)
+  if (prevUrlSearch !== urlSearch) {
+    setPrevUrlSearch(urlSearch);
+    setSearchInput(urlSearch);
+  }
 
   const [books, setBooks] = useState([]);
   const [totalAuthors, setTotalAuthors] = useState(0);
   const [totalCatalogValue, setTotalCatalogValue] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [search, setSearch] = useState('');
-  const [genre, setGenre] = useState('All Genres');
-  const [sortBy, setSortBy] = useState('recent');
-  const [page, setPage] = useState(1);
   const limit = 8;
-  const [pagination, setPagination] = useState({ page: 1, limit: 8, total: 0, totalPages: 1 });
+  const [pagination, setPagination] = useState({ page: urlPage, limit: 8, total: 0, totalPages: 1 });
 
-  const pageAbortControllerRef = useRef(null);
+  // Debounced search input sync to URL search params
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = searchInput.trim();
+      const currentUrlSearch = searchParams.get('search') || '';
+
+      if (trimmed !== currentUrlSearch) {
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev);
+            if (trimmed) {
+              next.set('search', trimmed);
+            } else {
+              next.delete('search');
+            }
+            next.delete('page'); // Reset to page 1 on new search
+            return next;
+          },
+          { replace: true }
+        );
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, searchParams, setSearchParams]);
+
+  // Handle Genre filter change
+  const handleGenreChange = (newGenre) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newGenre && newGenre !== 'All Genres') {
+        next.set('genre', newGenre);
+      } else {
+        next.delete('genre');
+      }
+      next.delete('page'); // Reset to page 1
+      return next;
+    });
+  };
+
+  // Handle Sort order change
+  const handleSortChange = (newSort) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newSort && newSort !== 'recent') {
+        next.set('sort', newSort);
+      } else {
+        next.delete('sort');
+      }
+      next.delete('page'); // Reset to page 1
+      return next;
+    });
+  };
+
+  // Handle Page navigation
+  const handlePageChange = (newPage) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newPage > 1) {
+        next.set('page', String(newPage));
+      } else {
+        next.delete('page');
+      }
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchCatalogData = useCallback(
     async (
@@ -81,40 +161,29 @@ export default function DashboardPage() {
     [limit, showToast]
   );
 
-  // Debounced Search, Filter & Sort effect with AbortController
+  // Trigger data fetching whenever URL parameters change (handles initial load, search/filter, and Back/Forward)
   useEffect(() => {
+    if (isInvalidPage) {
+      const timer = setTimeout(() => {
+        setBooks([]);
+        setPagination({ page: 1, limit: 8, total: 0, totalPages: 1 });
+        setLoading(false);
+        setError(null);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
     const controller = new AbortController();
 
     const timer = setTimeout(() => {
-      setPage(1);
-      fetchCatalogData(1, search, genre, sortBy, controller.signal);
-    }, 300);
+      fetchCatalogData(urlPage, urlSearch, urlGenre, urlSort, controller.signal);
+    }, 0);
 
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [search, genre, sortBy, fetchCatalogData]);
-
-  const handlePageChange = (newPage) => {
-    if (pageAbortControllerRef.current) {
-      pageAbortControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    pageAbortControllerRef.current = controller;
-
-    setPage(newPage);
-    fetchCatalogData(newPage, search, genre, sortBy, controller.signal);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    return () => {
-      if (pageAbortControllerRef.current) {
-        pageAbortControllerRef.current.abort();
-      }
-    };
-  }, []);
+  }, [isInvalidPage, urlPage, urlSearch, urlGenre, urlSort, fetchCatalogData]);
 
   const handleDeleteBook = async (book) => {
     const confirmed = await confirmAction({
@@ -131,12 +200,13 @@ export default function DashboardPage() {
         showToast(`"${book.title}" deleted successfully`, 'success');
 
         // If last item on page > 1, retreat to previous page
-        const isLastItemOnPage = books.length === 1 && page > 1;
-        const targetPage = isLastItemOnPage ? page - 1 : page;
-        if (isLastItemOnPage) {
-          setPage(targetPage);
+        const isLastItemOnPage = books.length === 1 && urlPage > 1;
+        const targetPage = isLastItemOnPage ? urlPage - 1 : urlPage;
+        if (targetPage !== urlPage) {
+          handlePageChange(targetPage);
+        } else {
+          fetchCatalogData(targetPage, urlSearch, urlGenre, urlSort);
         }
-        fetchCatalogData(targetPage, search, genre, sortBy);
       } catch (err) {
         showToast(err.message || 'Failed to delete volume', 'error');
       }
@@ -175,12 +245,12 @@ export default function DashboardPage() {
 
       {/* SECTION 2: SEARCH & TAXONOMIC FILTER BAR (Figma #1:577) */}
       <SearchFilterBar
-        search={search}
-        onSearchChange={setSearch}
-        genre={genre}
-        onGenreChange={setGenre}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
+        search={searchInput}
+        onSearchChange={setSearchInput}
+        genre={urlGenre}
+        onGenreChange={handleGenreChange}
+        sortBy={urlSort}
+        onSortChange={handleSortChange}
       />
 
       {/* SECTION 3: BOOKS CATALOG GRID */}
@@ -203,7 +273,7 @@ export default function DashboardPage() {
             </p>
             <button
               type="button"
-              onClick={() => fetchCatalogData(1, search, genre, sortBy)}
+              onClick={() => fetchCatalogData(urlPage, urlSearch, urlGenre, urlSort)}
               className="mt-2 px-5 py-2 bg-primary text-on-primary rounded-xl text-xs font-semibold hover:bg-primary-container transition-colors"
             >
               Retry Connection
@@ -218,7 +288,7 @@ export default function DashboardPage() {
               No volumes found
             </h3>
             <p className="text-xs sm:text-sm text-on-surface-variant max-w-sm">
-              {search || genre !== 'All Genres'
+              {urlSearch || urlGenre !== 'All Genres' || isInvalidPage
                 ? 'Try adjusting your search query or filter.'
                 : 'Start expanding your collection by cataloging a new volume.'}
             </p>
@@ -239,7 +309,7 @@ export default function DashboardPage() {
         )}
 
         {/* SECTION 4: PAGINATION FOOTER */}
-        {!loading && !error && (
+        {!loading && !error && books.length > 0 && (
           <Pagination
             page={pagination.page}
             totalPages={pagination.totalPages}
