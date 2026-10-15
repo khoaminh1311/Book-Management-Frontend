@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../context/ToastContext';
 import Pagination from '../components/common/Pagination';
@@ -27,18 +27,84 @@ const SORT_OPTIONS = [
  */
 export default function AuthorsPage() {
   const { showToast, confirmAction } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // URL Search Params (Single Source of Truth)
+  const urlSearch = searchParams.get('search') || '';
+  const urlSort = searchParams.get('sort') || 'recent';
+  const rawPage = searchParams.get('page');
+  const isInvalidPage = rawPage !== null && !/^[1-9]\d*$/.test(rawPage.trim());
+  const urlPage = isInvalidPage ? 1 : Math.max(1, parseInt(rawPage || '1', 10));
+
+  // Local state for smooth instant search typing
+  const [searchInput, setSearchInput] = useState(urlSearch);
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
+
+  // Sync local search input when URL search changes externally (e.g. Back/Forward)
+  if (prevUrlSearch !== urlSearch) {
+    setPrevUrlSearch(urlSearch);
+    setSearchInput(urlSearch);
+  }
 
   const [authors, setAuthors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('recent');
-  const [page, setPage] = useState(1);
   const limit = 10;
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
+  const [pagination, setPagination] = useState({ page: urlPage, limit: 10, total: 0, totalPages: 1 });
 
-  const pageAbortControllerRef = useRef(null);
+  // Debounced search input sync to URL search params
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = searchInput.trim();
+      const currentUrlSearch = searchParams.get('search') || '';
+
+      if (trimmed !== currentUrlSearch) {
+        setSearchParams(
+          (prev) => {
+            const next = new URLSearchParams(prev);
+            if (trimmed) {
+              next.set('search', trimmed);
+            } else {
+              next.delete('search');
+            }
+            next.delete('page'); // Reset to page 1 on new search
+            return next;
+          },
+          { replace: true }
+        );
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, searchParams, setSearchParams]);
+
+  // Handle Sort order change
+  const handleSortChange = (newSort) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newSort && newSort !== 'recent') {
+        next.set('sort', newSort);
+      } else {
+        next.delete('sort');
+      }
+      next.delete('page'); // Reset to page 1
+      return next;
+    });
+  };
+
+  // Handle Page navigation
+  const handlePageChange = (newPage) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newPage > 1) {
+        next.set('page', String(newPage));
+      } else {
+        next.delete('page');
+      }
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const fetchAuthors = useCallback(
     async (targetPage = 1, searchQuery = '', sortOption = 'recent', signal) => {
@@ -74,40 +140,29 @@ export default function AuthorsPage() {
     [limit, showToast]
   );
 
-  // Debounced Search and Sort effect with AbortController
+  // Trigger data fetching whenever URL parameters change (handles initial load, search/filter, and Back/Forward)
   useEffect(() => {
+    if (isInvalidPage) {
+      const timer = setTimeout(() => {
+        setAuthors([]);
+        setPagination({ page: 1, limit: 10, total: 0, totalPages: 1 });
+        setLoading(false);
+        setError(null);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
     const controller = new AbortController();
 
     const timer = setTimeout(() => {
-      setPage(1);
-      fetchAuthors(1, search, sortBy, controller.signal);
-    }, 300);
+      fetchAuthors(urlPage, urlSearch, urlSort, controller.signal);
+    }, 0);
 
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [search, sortBy, fetchAuthors]);
-
-  const handlePageChange = (newPage) => {
-    if (pageAbortControllerRef.current) {
-      pageAbortControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    pageAbortControllerRef.current = controller;
-
-    setPage(newPage);
-    fetchAuthors(newPage, search, sortBy, controller.signal);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    return () => {
-      if (pageAbortControllerRef.current) {
-        pageAbortControllerRef.current.abort();
-      }
-    };
-  }, []);
+  }, [isInvalidPage, urlPage, urlSearch, urlSort, fetchAuthors]);
 
   const handleDeleteAuthor = async (author) => {
     if (!author) return;
@@ -126,12 +181,13 @@ export default function AuthorsPage() {
       showToast(`Author "${author.name}" deleted successfully`, 'success');
 
       // If last item on page > 1, retreat to previous page
-      const isLastItemOnPage = authors.length === 1 && page > 1;
-      const targetPage = isLastItemOnPage ? page - 1 : page;
-      if (isLastItemOnPage) {
-        setPage(targetPage);
+      const isLastItemOnPage = authors.length === 1 && urlPage > 1;
+      const targetPage = isLastItemOnPage ? urlPage - 1 : urlPage;
+      if (targetPage !== urlPage) {
+        handlePageChange(targetPage);
+      } else {
+        fetchAuthors(targetPage, urlSearch, urlSort);
       }
-      fetchAuthors(targetPage, search, sortBy);
     } catch (err) {
       console.error('Error deleting author:', err);
       showToast(err.message || 'Failed to delete author', 'error');
@@ -169,8 +225,8 @@ export default function AuthorsPage() {
           </span>
           <input
             type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search authors by name..."
             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-outline-variant/60 text-sm text-[#1A1C1B] placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans"
           />
@@ -194,7 +250,7 @@ export default function AuthorsPage() {
             <span className="text-xs text-[#45474C] font-sans">Sort by:</span>
             <div className="relative inline-flex items-center cursor-pointer group">
               <div className="flex items-center gap-1 text-sm font-semibold text-primary select-none">
-                <span>{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || 'Last Updated'}</span>
+                <span>{SORT_OPTIONS.find((o) => o.value === urlSort)?.label || 'Last Updated'}</span>
                 {/* Exact downward triangle caret matching Figma #1:212 (width 6.67, height 3.33, color #091426) */}
                 <svg
                   className="w-[7px] h-[4px] fill-current shrink-0 text-primary"
@@ -204,8 +260,8 @@ export default function AuthorsPage() {
                 </svg>
               </div>
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                value={urlSort}
+                onChange={(e) => handleSortChange(e.target.value)}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer font-sans"
                 aria-label="Sort authors by"
               >
@@ -232,7 +288,7 @@ export default function AuthorsPage() {
             <p className="text-xs text-on-surface-variant max-w-sm font-sans">{error}</p>
             <button
               type="button"
-              onClick={() => fetchAuthors(page, search, sortBy)}
+              onClick={() => fetchAuthors(urlPage, urlSearch, urlSort)}
               className="mt-2 px-4 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold font-sans"
             >
               Retry
@@ -245,7 +301,7 @@ export default function AuthorsPage() {
             </span>
             <p className="text-sm font-medium text-primary font-sans">No authors found</p>
             <p className="text-xs text-on-surface-variant font-sans">
-              {search
+              {urlSearch || isInvalidPage
                 ? 'Try adjusting your search criteria.'
                 : 'Start adding authors to your catalog.'}
             </p>
@@ -468,7 +524,7 @@ export default function AuthorsPage() {
       </section>
 
       {/* SECTION 4: PAGINATION FOOTER */}
-      {!loading && !error && (
+      {!loading && !error && authors.length > 0 && (
         <Pagination
           page={pagination.page}
           totalPages={pagination.totalPages}
