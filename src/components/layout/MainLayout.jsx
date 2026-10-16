@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useState } from 'react';
+import { Outlet, ScrollRestoration } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 
@@ -8,6 +8,7 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen bg-surface">
+      <ScrollRestoration />
       <Header
         isMobileNavOpen={isMobileNavOpen}
         onToggleNav={() => setIsMobileNavOpen((prev) => !prev)}

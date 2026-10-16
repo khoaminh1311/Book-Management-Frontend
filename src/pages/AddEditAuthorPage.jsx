@@ -1,8 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../hooks/useToast';
+import { useUnsavedChangesWarning } from '../hooks/useUnsavedChangesWarning';
 import Breadcrumb from '../components/common/Breadcrumb';
+
+const INITIAL_AUTHOR_FORM = {
+  name: '',
+  nationality: '',
+  birthYear: '',
+  bio: '',
+};
 
 export default function AddEditAuthorPage() {
   const { id } = useParams();
@@ -10,13 +18,10 @@ export default function AddEditAuthorPage() {
   const { showToast } = useToast();
   const isEdit = Boolean(id);
 
-  // Form State
-  const [formData, setFormData] = useState({
-    name: '',
-    nationality: '',
-    birthYear: '',
-    bio: '',
-  });
+  // Form State & Clean Baseline Snapshot
+  const [formData, setFormData] = useState(INITIAL_AUTHOR_FORM);
+  const [initialData, setInitialData] = useState(INITIAL_AUTHOR_FORM);
+  const [isSaved, setIsSaved] = useState(false);
 
   const [formErrors, setFormErrors] = useState({});
   const [loadingAuthor, setLoadingAuthor] = useState(isEdit);
@@ -32,12 +37,14 @@ export default function AddEditAuthorPage() {
           const res = await api.getAuthor(id);
           const author = res?.data || res;
           if (isMounted && author) {
-            setFormData({
+            const loaded = {
               name: author.name || '',
               nationality: author.nationality || '',
               birthYear: author.birthYear != null ? String(author.birthYear) : '',
               bio: author.bio || '',
-            });
+            };
+            setFormData(loaded);
+            setInitialData(loaded);
           }
         } catch (err) {
           if (isMounted) {
@@ -55,6 +62,24 @@ export default function AddEditAuthorPage() {
       };
     }
   }, [id, isEdit, navigate, showToast]);
+
+  // Determine if form has unsaved modifications
+  const isDirty = useMemo(() => {
+    if (loadingAuthor || isSubmitting || isSaved) return false;
+    if (!initialData) return false;
+
+    const nameChanged = (formData.name || '').trim() !== (initialData.name || '').trim();
+    const nationalityChanged =
+      (formData.nationality || '').trim() !== (initialData.nationality || '').trim();
+    const birthYearChanged =
+      String(formData.birthYear || '').trim() !== String(initialData.birthYear || '').trim();
+    const bioChanged = (formData.bio || '').trim() !== (initialData.bio || '').trim();
+
+    return nameChanged || nationalityChanged || birthYearChanged || bioChanged;
+  }, [formData, initialData, loadingAuthor, isSubmitting, isSaved]);
+
+  // Guard against losing unsaved changes
+  const { handleCancel } = useUnsavedChangesWarning(isDirty);
 
   // Input Change Handler
   const handleChange = (e) => {
@@ -115,10 +140,12 @@ export default function AddEditAuthorPage() {
       if (isEdit) {
         await api.updateAuthor(id, payload);
         showToast('Author profile updated successfully', 'success');
+        setIsSaved(true);
         navigate(`/authors/${id}`);
       } else {
         const res = await api.createAuthor(payload);
         showToast('Author added to collection successfully', 'success');
+        setIsSaved(true);
         const newId = res?.data?._id || res?._id;
         navigate(newId ? `/authors/${newId}` : '/authors');
       }
@@ -200,9 +227,8 @@ export default function AddEditAuthorPage() {
                 onChange={handleChange}
                 maxLength={100}
                 placeholder="Elena Rostova"
-                className={`w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${
-                  formErrors.name ? 'border-error ring-1 ring-error' : 'border-transparent'
-                } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
+                className={`w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.name ? 'border-error ring-1 ring-error' : 'border-transparent'
+                  } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
               />
             </div>
             {formErrors.name && (
@@ -279,9 +305,8 @@ export default function AddEditAuthorPage() {
                   value={formData.birthYear}
                   onChange={handleChange}
                   placeholder="1978"
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${
-                    formErrors.birthYear ? 'border-error ring-1 ring-error' : 'border-transparent'
-                  } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
+                  className={`w-full pl-10 pr-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.birthYear ? 'border-error ring-1 ring-error' : 'border-transparent'
+                    } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
                 />
               </div>
               {formErrors.birthYear && (
@@ -312,9 +337,8 @@ export default function AddEditAuthorPage() {
               value={formData.bio}
               onChange={handleChange}
               placeholder="Elena Rostova is a contemporary novelist and essayist known for her contemplative prose style and exploration of displaced identities across Nordic and Mediterranean landscapes. Her work bridges post-war architectural history with intimate interior drama, earning widespread literary recognition and international translation."
-              className={`w-full p-3.5 sm:p-4 rounded-lg bg-[#F4F3F1] border ${
-                formErrors.bio ? 'border-error ring-1 ring-error' : 'border-transparent'
-              } text-xs sm:text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans leading-relaxed resize-y min-h-[120px] sm:min-h-[140px]`}
+              className={`w-full p-3.5 sm:p-4 rounded-lg bg-[#F4F3F1] border ${formErrors.bio ? 'border-error ring-1 ring-error' : 'border-transparent'
+                } text-xs sm:text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans leading-relaxed resize-y min-h-[120px] sm:min-h-[140px]`}
             />
             {formErrors.bio && (
               <p className="text-xs text-error font-sans mt-0.5">{formErrors.bio}</p>
@@ -325,7 +349,16 @@ export default function AddEditAuthorPage() {
           <div className="flex items-center gap-2.5 sm:gap-3 pt-4 border-t border-[#E9E8E6] mt-1 w-full justify-between">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onPointerDown={() => {
+                if (
+                  document.activeElement &&
+                  document.activeElement !== document.body &&
+                  typeof document.activeElement.blur === 'function'
+                ) {
+                  document.activeElement.blur();
+                }
+              }}
+              onClick={handleCancel}
               disabled={isSubmitting}
               className="flex-1 sm:flex-initial justify-center px-4 sm:px-5 py-2.5 rounded-lg border border-[#C5C6CD] hover:bg-[#F4F3F1] text-xs sm:text-sm font-semibold text-[#1A1C1B] transition-colors flex items-center gap-2 font-sans cursor-pointer disabled:opacity-50"
             >
