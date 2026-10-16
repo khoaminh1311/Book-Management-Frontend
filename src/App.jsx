@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -6,16 +6,29 @@ import {
   Route,
   Navigate,
   useLocation,
+  Outlet,
 } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import MainLayout from './components/layout/MainLayout';
 
-import DashboardPage from './pages/DashboardPage';
-import AuthorsPage from './pages/AuthorsPage';
-import BookDetailPage from './pages/BookDetailPage';
-import AuthorDetailPage from './pages/AuthorDetailPage';
-import AddEditBookPage from './pages/AddEditBookPage';
-import AddEditAuthorPage from './pages/AddEditAuthorPage';
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AuthorsPage = lazy(() => import('./pages/AuthorsPage'));
+const BookDetailPage = lazy(() => import('./pages/BookDetailPage'));
+const AuthorDetailPage = lazy(() => import('./pages/AuthorDetailPage'));
+const AddEditBookPage = lazy(() => import('./pages/AddEditBookPage'));
+const AddEditAuthorPage = lazy(() => import('./pages/AddEditAuthorPage'));
+
+function PageLoadingFallback() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading page view"
+      className="flex-1 flex flex-col items-center justify-center p-8 min-h-[50vh] gap-3"
+    >
+      <div className="w-10 h-10 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+    </div>
+  );
+}
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -70,20 +83,28 @@ function AddEditAuthorRoute() {
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<MainLayout />}>
-      {/* Books & Catalog */}
-      <Route index element={<DashboardPage />} />
-      <Route path="books/:id" element={<BookDetailPage />} />
-      <Route path="add-book" element={<AddEditBookRoute />} />
-      <Route path="edit-book/:id" element={<AddEditBookRoute />} />
+      <Route
+        element={
+          <Suspense fallback={<PageLoadingFallback />}>
+            <Outlet />
+          </Suspense>
+        }
+      >
+        {/* Books & Catalog */}
+        <Route index element={<DashboardPage />} />
+        <Route path="books/:id" element={<BookDetailPage />} />
+        <Route path="add-book" element={<AddEditBookRoute />} />
+        <Route path="edit-book/:id" element={<AddEditBookRoute />} />
 
-      {/* Authors */}
-      <Route path="authors" element={<AuthorsPage />} />
-      <Route path="authors/:id" element={<AuthorDetailPage />} />
-      <Route path="add-author" element={<AddEditAuthorRoute />} />
-      <Route path="edit-author/:id" element={<AddEditAuthorRoute />} />
+        {/* Authors */}
+        <Route path="authors" element={<AuthorsPage />} />
+        <Route path="authors/:id" element={<AuthorDetailPage />} />
+        <Route path="add-author" element={<AddEditAuthorRoute />} />
+        <Route path="edit-author/:id" element={<AddEditAuthorRoute />} />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
     </Route>
   )
 );
