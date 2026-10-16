@@ -29,6 +29,8 @@ Developed with a focus on strict validation, error handling, robust querying cap
 - **Core**: React 19, Vite 6
 - **Routing**: React Router 7
 - **Styling**: TailwindCSS v3 (Custom Editorial Color Palette & Typography Tokens)
+- **Testing**: Vitest (51 Automated Unit Tests, JSDOM)
+- **Code Quality & Linting**: ESLint 9 (Flat Config), Prettier
 - **Security**: DOMPurify (Stored XSS Sanitization)
 - **Icons**: Google Material Symbols
 
@@ -76,7 +78,25 @@ Developed with a focus on strict validation, error handling, robust querying cap
 
    Open `http://localhost:5173` in your browser.
 
-5. **Build for Production**
+5. **Run Automated Tests**
+   ```bash
+   # Run all 51 unit tests with Vitest
+   npm test
+
+   # Run tests in watch mode
+   npm run test:watch
+   ```
+
+6. **Code Quality & Formatting**
+   ```bash
+   # Check code rules with ESLint 9
+   npm run lint
+
+   # Automatically format codebase with Prettier
+   npm run format
+   ```
+
+7. **Build for Production**
    ```bash
    npm run build
    ```
