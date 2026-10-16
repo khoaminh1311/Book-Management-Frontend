@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { createContext, useState, useCallback, useRef, useEffect } from 'react';
 
-const ToastContext = createContext(null);
+export const ToastContext = createContext(null);
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
@@ -110,59 +110,72 @@ export function ToastProvider({ children }) {
       </div>
 
       {/* Confirmation Modal with Backdrop Blur matching Figma Design */}
-      {modalConfig && (
-        <div className="fixed inset-0 z-[10000] bg-primary/45 backdrop-blur-[4px] flex items-center justify-center p-4 transition-opacity">
-          <div className="bg-surface-container-lowest text-on-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-outline-variant/40 flex flex-col gap-5 transform scale-100 transition-transform">
-            <div className="flex items-start gap-3.5">
-              <div
-                className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${
-                  modalConfig.isDangerous
-                    ? 'bg-error-container/60 text-error'
-                    : 'bg-surface-container text-primary'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[22px]">
-                  {modalConfig.isDangerous ? 'warning' : 'help'}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <h3 className="font-serif text-lg font-bold text-primary tracking-tight">
-                  {modalConfig.title}
-                </h3>
-                <p className="text-sm text-on-surface-variant leading-relaxed">
-                  {modalConfig.message}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={modalConfig.onCancel}
-                className="px-4 py-2 rounded-xl border border-outline-variant text-on-surface hover:bg-surface-container text-xs font-semibold transition-colors"
-              >
-                {modalConfig.cancelText}
-              </button>
-              <button
-                type="button"
-                onClick={modalConfig.onConfirm}
-                className={`px-5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-colors ${
-                  modalConfig.isDangerous
-                    ? 'bg-error-container text-on-error-container hover:bg-error hover:text-white'
-                    : 'bg-primary text-on-primary hover:bg-primary-container'
-                }`}
-              >
-                {modalConfig.confirmText}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {modalConfig && <ConfirmModal config={modalConfig} />}
     </ToastContext.Provider>
   );
 }
 
-export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within ToastProvider');
-  return ctx;
+function ConfirmModal({ config }) {
+  const cancelBtnRef = useRef(null);
+
+  useEffect(() => {
+    // Focus modal action with preventScroll: true per W3C WAI-ARIA Dialog guidelines
+    cancelBtnRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  return (
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirm-modal-title"
+      aria-describedby="confirm-modal-desc"
+      className="fixed inset-0 z-[10000] bg-primary/45 backdrop-blur-[4px] flex items-center justify-center p-4 transition-opacity"
+    >
+      <div className="bg-surface-container-lowest text-on-surface rounded-2xl max-w-md w-full p-6 shadow-2xl border border-outline-variant/40 flex flex-col gap-5 transform scale-100 transition-transform">
+        <div className="flex items-start gap-3.5">
+          <div
+            className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${
+              config.isDangerous
+                ? 'bg-error-container/60 text-error'
+                : 'bg-surface-container text-primary'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[22px]">
+              {config.isDangerous ? 'warning' : 'help'}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <h3 id="confirm-modal-title" className="font-serif text-lg font-bold text-primary tracking-tight">
+              {config.title}
+            </h3>
+            <p id="confirm-modal-desc" className="text-sm text-on-surface-variant leading-relaxed">
+              {config.message}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <button
+            ref={cancelBtnRef}
+            type="button"
+            onClick={config.onCancel}
+            className="px-4 py-2 rounded-xl border border-outline-variant text-on-surface hover:bg-surface-container text-xs font-semibold transition-colors"
+          >
+            {config.cancelText}
+          </button>
+          <button
+            type="button"
+            onClick={config.onConfirm}
+            className={`px-5 py-2 rounded-xl text-xs font-semibold shadow-sm transition-colors ${
+              config.isDangerous
+                ? 'bg-error-container text-on-error-container hover:bg-error hover:text-white'
+                : 'bg-primary text-on-primary hover:bg-primary-container'
+            }`}
+          >
+            {config.confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
+

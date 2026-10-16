@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../hooks/useToast';
+import { useUnsavedChangesWarning } from '../hooks/useUnsavedChangesWarning';
 import { sanitizeHtml, isValidHttpUrl } from '../utils/sanitize';
 import { GENRE_OPTIONS } from '../utils/constants';
 import RichTextEditor from '../components/books/RichTextEditor';
@@ -10,6 +11,16 @@ import BookLivePreviewCard from '../components/books/BookLivePreviewCard';
 import Breadcrumb from '../components/common/Breadcrumb';
 
 const MAX_DESCRIPTION_CHARS = 5000;
+
+const createInitialBookForm = (preselectedAuthorId = '') => ({
+  title: '',
+  author: preselectedAuthorId,
+  publishedYear: new Date().getFullYear(),
+  genre: 'Art & Architecture',
+  price: '34.50',
+  description: '',
+  coverImage: '',
+});
 
 export default function AddEditBookPage() {
   const { id } = useParams();
@@ -20,16 +31,10 @@ export default function AddEditBookPage() {
   const isEdit = Boolean(id);
   const preselectedAuthorId = searchParams.get('author') || '';
 
-  // Form State
-  const [formData, setFormData] = useState({
-    title: '',
-    author: preselectedAuthorId,
-    publishedYear: new Date().getFullYear(),
-    genre: 'Art & Architecture',
-    price: '34.50',
-    description: '',
-    coverImage: '',
-  });
+  // Form State & Clean Baseline Snapshot
+  const [formData, setFormData] = useState(() => createInitialBookForm(preselectedAuthorId));
+  const [initialData, setInitialData] = useState(() => createInitialBookForm(preselectedAuthorId));
+  const [isSaved, setIsSaved] = useState(false);
 
   // Auxiliary State
   const [authors, setAuthors] = useState([]);
@@ -51,6 +56,7 @@ export default function AddEditBookPage() {
           setAuthors(list);
           if (!isEdit && list.length > 0 && !preselectedAuthorId) {
             setFormData((prev) => (prev.author ? prev : { ...prev, author: list[0]._id }));
+            setInitialData((prev) => (prev.author ? prev : { ...prev, author: list[0]._id }));
           }
         }
       } catch (err) {
@@ -78,7 +84,7 @@ export default function AddEditBookPage() {
         if (!book) throw new Error('Volume record could not be found');
 
         if (isMounted) {
-          setFormData({
+          const loadedData = {
             title: book.title || '',
             author: book.author?._id || book.author || '',
             publishedYear: book.publishedYear || new Date().getFullYear(),
@@ -86,7 +92,9 @@ export default function AddEditBookPage() {
             price: book.price !== undefined && book.price !== null ? String(book.price) : '0',
             description: sanitizeHtml(book.description || ''),
             coverImage: book.coverImage || '',
-          });
+          };
+          setFormData(loadedData);
+          setInitialData(loadedData);
         }
       } catch (err) {
         console.error('Error fetching book for edit:', err);
@@ -102,6 +110,41 @@ export default function AddEditBookPage() {
       isMounted = false;
     };
   }, [id, isEdit, navigate, showToast]);
+
+  // Determine if form has unsaved modifications
+  const isDirty = useMemo(() => {
+    if (initialLoading || isSubmitting || isSaved) return false;
+    if (!initialData) return false;
+
+    const titleChanged = formData.title.trim() !== (initialData.title || '').trim();
+    const authorChanged = (formData.author || '') !== (initialData.author || '');
+    const yearChanged =
+      String(formData.publishedYear).trim() !== String(initialData.publishedYear || '').trim();
+    const genreChanged = (formData.genre || '') !== (initialData.genre || '');
+    const priceChanged = String(formData.price).trim() !== String(initialData.price || '').trim();
+    const coverChanged = (formData.coverImage || '').trim() !== (initialData.coverImage || '').trim();
+
+    // Description: Check plain text first to ignore empty HTML tags like <p><br></p>
+    const cleanCurrentDesc = (formData.description || '').replace(/<[^>]*>/g, '').trim();
+    const cleanInitialDesc = (initialData.description || '').replace(/<[^>]*>/g, '').trim();
+    const descChanged =
+      cleanCurrentDesc !== cleanInitialDesc ||
+      (cleanCurrentDesc !== '' &&
+        sanitizeHtml(formData.description).trim() !== sanitizeHtml(initialData.description).trim());
+
+    return (
+      titleChanged ||
+      authorChanged ||
+      yearChanged ||
+      genreChanged ||
+      priceChanged ||
+      coverChanged ||
+      descChanged
+    );
+  }, [formData, initialData, initialLoading, isSubmitting, isSaved]);
+
+  // Guard against losing unsaved changes
+  const { handleCancel } = useUnsavedChangesWarning(isDirty);
 
   // Calculate word count for Description (stripping HTML tags)
   const wordCount = useMemo(() => {
@@ -243,10 +286,12 @@ export default function AddEditBookPage() {
       if (isEdit) {
         await api.updateBook(id, payload);
         showToast('Volume metadata successfully updated in archive!', 'success');
+        setIsSaved(true);
         navigate(`/books/${id}`);
       } else {
         const res = await api.createBook(payload);
         showToast('New volume successfully cataloged in archive!', 'success');
+        setIsSaved(true);
         const createdId = res?.data?._id;
         if (createdId) {
           navigate(`/books/${createdId}`);
@@ -343,9 +388,8 @@ export default function AddEditBookPage() {
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="The Architecture of Silence"
-                  className={`w-full px-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${
-                    formErrors.title ? 'border-error ring-1 ring-error' : 'border-transparent'
-                  } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
+                  className={`w-full px-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.title ? 'border-error ring-1 ring-error' : 'border-transparent'
+                    } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
                 />
                 {formErrors.title && (
                   <p className="text-xs text-error font-sans">{formErrors.title}</p>
@@ -370,9 +414,8 @@ export default function AddEditBookPage() {
                       value={formData.author}
                       onChange={handleChange}
                       disabled={loadingAuthors}
-                      className={`w-full pl-4 pr-10 py-2.5 rounded-lg bg-[#F4F3F1] border ${
-                        formErrors.author ? 'border-error' : 'border-transparent'
-                      } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all appearance-none cursor-pointer font-sans`}
+                      className={`w-full pl-4 pr-10 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.author ? 'border-error' : 'border-transparent'
+                        } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all appearance-none cursor-pointer font-sans`}
                     >
                       <option value="" disabled>
                         {loadingAuthors ? 'Loading archival authors...' : 'Select an author'}
@@ -413,9 +456,8 @@ export default function AddEditBookPage() {
                     value={formData.publishedYear}
                     onChange={handleChange}
                     placeholder="2023"
-                    className={`w-full px-3 py-2.5 rounded-lg bg-[#F4F3F1] border ${
-                      formErrors.publishedYear ? 'border-error' : 'border-transparent'
-                    } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
+                    className={`w-full px-3 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.publishedYear ? 'border-error' : 'border-transparent'
+                      } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
                   />
                   {formErrors.publishedYear && (
                     <p className="text-xs text-error font-sans">{formErrors.publishedYear}</p>
@@ -477,9 +519,8 @@ export default function AddEditBookPage() {
                       value={formData.price}
                       onChange={handleChange}
                       placeholder="34.50"
-                      className={`w-full pl-8 pr-16 py-2.5 rounded-lg bg-[#F4F3F1] border ${
-                        formErrors.price ? 'border-error' : 'border-transparent'
-                      } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans font-normal`}
+                      className={`w-full pl-8 pr-16 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.price ? 'border-error' : 'border-transparent'
+                        } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans font-normal`}
                     />
                     <span className="absolute right-3 font-label-sm text-label-sm text-[#45474C] bg-[#E9E8E6] px-2 py-0.5 rounded">
                       USD
@@ -539,7 +580,16 @@ export default function AddEditBookPage() {
           <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onPointerDown={() => {
+                if (
+                  document.activeElement &&
+                  document.activeElement !== document.body &&
+                  typeof document.activeElement.blur === 'function'
+                ) {
+                  document.activeElement.blur();
+                }
+              }}
+              onClick={handleCancel}
               disabled={isSubmitting}
               className="flex-1 sm:flex-initial justify-center px-4 sm:px-5 py-2.5 rounded-lg border border-[#C5C6CD] hover:bg-[#F4F3F1] text-xs sm:text-sm font-semibold text-[#1A1C1B] transition-colors flex items-center gap-2 font-sans cursor-pointer"
             >
