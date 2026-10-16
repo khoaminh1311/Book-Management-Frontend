@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useToast } from '../../context/ToastContext';
+import { useToast } from '../../hooks/useToast';
 
 export default function Header({ isMobileNavOpen = false, onToggleNav }) {
   const location = useLocation();

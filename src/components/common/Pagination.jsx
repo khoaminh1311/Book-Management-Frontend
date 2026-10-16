@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * Pagination Component
  * Strict Figma Design System Specs (Frame #1:747 - SECTION 4: PAGINATION BAR):
