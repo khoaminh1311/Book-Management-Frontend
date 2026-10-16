@@ -97,10 +97,12 @@ export default function BookCover({ book = {}, size = 'md', className = '', imgC
   // If valid cover image URL is available and hasn't errored
   if (hasValidImage) {
     return (
-      <div className={`relative w-full h-full overflow-hidden bg-surface-container ${className}`}>
+      <div className={`relative w-full h-full aspect-[2/3] overflow-hidden bg-surface-container ${className}`}>
         <img
           src={book.coverImage}
           alt={title}
+          loading="lazy"
+          decoding="async"
           className={`w-full h-full object-cover ${imgClassName}`}
           onError={() => setImgError(true)}
         />

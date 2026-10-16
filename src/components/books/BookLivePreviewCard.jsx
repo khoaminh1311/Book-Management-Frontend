@@ -21,6 +21,8 @@ export default function BookLivePreviewCard({ formData = {}, selectedAuthor = nu
           <img
             src={formData.coverImage}
             alt="Cover preview"
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover opacity-50"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
