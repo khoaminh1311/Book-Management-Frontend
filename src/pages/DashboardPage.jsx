@@ -5,6 +5,7 @@ import { useToast } from '../hooks/useToast';
 import MetricsGrid from '../components/books/MetricsGrid';
 import SearchFilterBar from '../components/books/SearchFilterBar';
 import BookCard from '../components/books/BookCard';
+import BookCardSkeleton from '../components/books/BookCardSkeleton';
 import Pagination from '../components/common/Pagination';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { GENRE_OPTIONS } from '../utils/constants';
@@ -256,9 +257,14 @@ export default function DashboardPage() {
       {/* SECTION 3: BOOKS CATALOG GRID */}
       <section>
         {loading ? (
-          <div className="py-16 sm:py-24 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-10 h-10 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            <p className="text-sm text-on-surface-variant">Loading catalog volumes...</p>
+          <div
+            role="status"
+            aria-label="Loading catalog volumes"
+            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6"
+          >
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <BookCardSkeleton key={idx} />
+            ))}
           </div>
         ) : error ? (
           <div className="py-16 sm:py-20 text-center flex flex-col items-center justify-center gap-3 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 sm:p-8">

@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import Pagination from '../components/common/Pagination';
 import Breadcrumb from '../components/common/Breadcrumb';
+import AuthorRowSkeleton from '../components/authors/AuthorRowSkeleton';
 import { getInitials, getAvatarColor } from '../utils/helpers';
 
 const SORT_OPTIONS = [
@@ -240,9 +241,16 @@ export default function AuthorsPage() {
           {/* Left: Heading & Badge (Figma #1:200 - #1:204) */}
           <div className="flex items-center gap-2.5">
             <h2 className="font-sans font-semibold text-sm text-primary">All Catalog Authors</h2>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#E9E8E6] text-[#45474C] font-sans tracking-[0.05em]">
-              Showing {authors.length} authors
-            </span>
+            {loading ? (
+              <div
+                aria-hidden="true"
+                className="w-24 h-5 rounded-full bg-surface-container animate-pulse"
+              />
+            ) : (
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#E9E8E6] text-[#45474C] font-sans tracking-[0.05em]">
+                Showing {authors.length} authors
+              </span>
+            )}
           </div>
 
           {/* Right: Inline Sort by (Figma #1:205 - #1:212: gap 4px between text and caret!) */}
@@ -277,10 +285,49 @@ export default function AuthorsPage() {
 
         {/* Content: Loading / Error / Empty States */}
         {loading ? (
-          <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            <p className="text-xs text-on-surface-variant font-sans">Loading authors catalog...</p>
-          </div>
+          <>
+            {/* Mobile Card Skeleton List (< md) */}
+            <div
+              role="status"
+              aria-label="Loading authors catalog"
+              className="md:hidden divide-y divide-outline-variant/20"
+            >
+              {Array.from({ length: 10 }).map((_, index) => (
+                <AuthorRowSkeleton key={index} isMobile />
+              ))}
+            </div>
+
+            {/* Desktop / Tablet Full Data Table Skeleton (>= md) */}
+            <div
+              role="status"
+              aria-label="Loading authors catalog"
+              className="hidden md:block overflow-x-auto"
+            >
+              <table className="w-full text-left border-collapse min-w-[700px]">
+                <thead>
+                  <tr className="bg-[rgba(244,243,241,0.7)] border-b border-outline-variant/30 text-[11px] font-semibold tracking-[0.05em] text-[#45474C] uppercase font-sans">
+                    <th scope="col" className="px-6 py-3.5 w-5/12 font-semibold">
+                      AUTHOR
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 w-3/12 font-semibold">
+                      NATIONALITY
+                    </th>
+                    <th scope="col" className="px-4 py-3.5 w-2/12 font-semibold">
+                      BIRTH YEAR
+                    </th>
+                    <th scope="col" className="px-6 py-3.5 w-2/12 font-semibold text-right">
+                      ACTIONS
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant/20">
+                  {Array.from({ length: 10 }).map((_, index) => (
+                    <AuthorRowSkeleton key={index} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : error ? (
           <div className="py-16 text-center flex flex-col items-center justify-center gap-2 p-6">
             <span className="material-symbols-outlined text-[36px] text-error">cloud_off</span>
