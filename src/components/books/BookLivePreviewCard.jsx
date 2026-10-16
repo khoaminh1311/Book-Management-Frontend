@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function BookLivePreviewCard({ formData = {}, selectedAuthor = null }) {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] flex flex-col items-center gap-4">

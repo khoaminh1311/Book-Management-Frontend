@@ -42,7 +42,7 @@ export default [
         'warn',
         {
           argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_|React$',
+          varsIgnorePattern: '^_',
         },
       ],
     },

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../hooks/useToast';
 import Pagination from '../components/common/Pagination';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { getInitials, getAvatarColor } from '../utils/helpers';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { GENRE_FILTER_OPTIONS } from '../../utils/constants';
 
 /**

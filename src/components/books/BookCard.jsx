@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import BookCover from './BookCover';
 import { formatPrice, normalizeAuthor } from '../../utils/helpers';

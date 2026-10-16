@@ -1,4 +1,3 @@
-import React from 'react';
 import { GENRE_OPTIONS } from '../../utils/constants';
 
 /**

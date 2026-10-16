@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useToast } from '../../context/ToastContext';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useToast } from '../../hooks/useToast';
 import { sanitizeHtml, isValidHttpUrl } from '../../utils/sanitize';
 
 export default function RichTextEditor({
