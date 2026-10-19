@@ -2,6 +2,7 @@
  * Shared application constants
  * Single source of truth for genres and filters
  */
+export const MIN_PUBLISHED_YEAR = 1000;
 
 export const GENRE_OPTIONS = [
   'Art & Architecture',

@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import { useUnsavedChangesWarning } from '../hooks/useUnsavedChangesWarning';
 import { sanitizeHtml, isValidHttpUrl } from '../utils/sanitize';
-import { GENRE_OPTIONS } from '../utils/constants';
+import { GENRE_OPTIONS, MIN_PUBLISHED_YEAR } from '../utils/constants';
 import RichTextEditor from '../components/books/RichTextEditor';
 import CoverUploadDropzone from '../components/books/CoverUploadDropzone';
 import BookLivePreviewCard from '../components/books/BookLivePreviewCard';
@@ -122,7 +122,8 @@ export default function AddEditBookPage() {
       String(formData.publishedYear).trim() !== String(initialData.publishedYear || '').trim();
     const genreChanged = (formData.genre || '') !== (initialData.genre || '');
     const priceChanged = String(formData.price).trim() !== String(initialData.price || '').trim();
-    const coverChanged = (formData.coverImage || '').trim() !== (initialData.coverImage || '').trim();
+    const coverChanged =
+      (formData.coverImage || '').trim() !== (initialData.coverImage || '').trim();
 
     // Description: Check plain text first to ignore empty HTML tags like <p><br></p>
     const cleanCurrentDesc = (formData.description || '').replace(/<[^>]*>/g, '').trim();
@@ -234,9 +235,13 @@ export default function AddEditBookPage() {
     }
 
     const currentYear = new Date().getFullYear();
+    const yearStr = String(formData.publishedYear ?? '').trim();
     const yearNum = Number(formData.publishedYear);
-    if (!yearNum || !Number.isInteger(yearNum) || yearNum <= 0) {
-      errors.publishedYear = 'Please provide a valid past year';
+
+    if (!yearStr) {
+      errors.publishedYear = 'Published year is required';
+    } else if (!Number.isInteger(yearNum) || yearNum < MIN_PUBLISHED_YEAR) {
+      errors.publishedYear = `Published year must be between ${MIN_PUBLISHED_YEAR} and ${currentYear}`;
     } else if (yearNum > currentYear) {
       errors.publishedYear = `Published year cannot be in the future (max ${currentYear})`;
     }
@@ -335,7 +340,7 @@ export default function AddEditBookPage() {
       </div>
 
       {/* Main Bento Grid: Form Fields (8 cols) + Physical Simulation (4 cols) (Figma #1:933) */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-8">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 sm:gap-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
           {/* LEFT 8 COLUMNS: FORM FIELDS (Figma #1:934) */}
           <div className="lg:col-span-8 flex flex-col gap-6 sm:gap-8">
@@ -388,8 +393,9 @@ export default function AddEditBookPage() {
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="The Architecture of Silence"
-                  className={`w-full px-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.title ? 'border-error ring-1 ring-error' : 'border-transparent'
-                    } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
+                  className={`w-full px-4 py-2.5 rounded-lg bg-[#F4F3F1] border ${
+                    formErrors.title ? 'border-error ring-1 ring-error' : 'border-transparent'
+                  } text-sm text-[#1A1C1B] placeholder:text-[#45474C]/50 focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
                 />
                 {formErrors.title && (
                   <p className="text-xs text-error font-sans">{formErrors.title}</p>
@@ -414,8 +420,9 @@ export default function AddEditBookPage() {
                       value={formData.author}
                       onChange={handleChange}
                       disabled={loadingAuthors}
-                      className={`w-full pl-4 pr-10 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.author ? 'border-error' : 'border-transparent'
-                        } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all appearance-none cursor-pointer font-sans`}
+                      className={`w-full pl-4 pr-10 py-2.5 rounded-lg bg-[#F4F3F1] border ${
+                        formErrors.author ? 'border-error' : 'border-transparent'
+                      } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all appearance-none cursor-pointer font-sans`}
                     >
                       <option value="" disabled>
                         {loadingAuthors ? 'Loading archival authors...' : 'Select an author'}
@@ -450,14 +457,17 @@ export default function AddEditBookPage() {
                     id="book-year"
                     name="publishedYear"
                     type="number"
-                    min="1"
+                    min={MIN_PUBLISHED_YEAR}
                     max={new Date().getFullYear()}
                     required
                     value={formData.publishedYear}
                     onChange={handleChange}
                     placeholder="2023"
-                    className={`w-full px-3 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.publishedYear ? 'border-error' : 'border-transparent'
-                      } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
+                    className={`w-full px-3 py-2.5 rounded-lg bg-[#F4F3F1] border ${
+                      formErrors.publishedYear
+                        ? 'border-error ring-1 ring-error'
+                        : 'border-transparent'
+                    } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans`}
                   />
                   {formErrors.publishedYear && (
                     <p className="text-xs text-error font-sans">{formErrors.publishedYear}</p>
@@ -519,8 +529,9 @@ export default function AddEditBookPage() {
                       value={formData.price}
                       onChange={handleChange}
                       placeholder="34.50"
-                      className={`w-full pl-8 pr-16 py-2.5 rounded-lg bg-[#F4F3F1] border ${formErrors.price ? 'border-error' : 'border-transparent'
-                        } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans font-normal`}
+                      className={`w-full pl-8 pr-16 py-2.5 rounded-lg bg-[#F4F3F1] border ${
+                        formErrors.price ? 'border-error' : 'border-transparent'
+                      } text-sm text-[#1A1C1B] focus:outline-none focus:ring-2 focus:ring-[#091426]/20 transition-all font-sans font-normal`}
                     />
                     <span className="absolute right-3 font-label-sm text-label-sm text-[#45474C] bg-[#E9E8E6] px-2 py-0.5 rounded">
                       USD
